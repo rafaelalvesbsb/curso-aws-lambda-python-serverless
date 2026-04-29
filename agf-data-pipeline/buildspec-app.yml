@@ -7,7 +7,8 @@ phases:
 
   build:
     commands:
-      - sam build --template-file agf-data-pipeline/template.yaml --use-container
+      - cd agf-data-pipeline
+      - sam build --use-container
 
   post_build:
     commands:
@@ -39,6 +40,7 @@ phases:
           --template-file .aws-sam/build/template.yaml \
           --stack-name agfi-lambda-dev \
           --s3-bucket agfi-pipeline-artifactbucket-o3htnl0pnv5u \
+          --region us-east-2 \
           --no-confirm-changeset \
           --no-fail-on-empty-changeset \
           --capabilities CAPABILITY_NAMED_IAM
