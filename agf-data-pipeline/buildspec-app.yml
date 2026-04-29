@@ -7,9 +7,28 @@ phases:
 
   build:
     commands:
-      - sam build --template-file agf-data-pipeline/template.yaml
+      - sam build --template-file agf-data-pipeline/template.yaml  --use-container
 
   post_build:
     commands:
+      - echo "Limpando stack quebrada se existir..."
+
+        - |
+          STATUS=$(aws cloudformation describe-stacks \
+        --stack-name agfi-lambda-dev \
+        --region us-east-2 \
+        --query "Stacks[0].StackStatus" \
+        --output text 2>/dev/null || echo "NOT_FOUND")
+
+        if [ "$STATUS" = "ROLLBACK_COMPLETE" ]; then
+        echo "Stack em ROLLBACK — deletando..."
+        aws cloudformation delete-stack \
+          --stack-name agfi-lambda-dev \
+          --region us-east-2
+
+        aws cloudformation wait stack-delete-complete \
+          --stack-name agfi-lambda-dev \
+          --region us-east-2
+        fi
       - echo "DEPLOY INICIANDO"
       - sam deploy --template-file .aws-sam/build/template.yaml --stack-name agfi-lambda-dev --s3-bucket agfi-pipeline-artifactbucket-o3htnl0pnv5u --no-confirm-changeset --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
