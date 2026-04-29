@@ -31,10 +31,13 @@ Resources:
 # ==========================================
   SyncQueue:
     Type: AWS::SQS::Queue
-
+    Properties:
+      VisibilityTimeout: 600
+  
   SyncQueueDLQ:
     Type: AWS::SQS::Queue
-
+    Properties:
+      VisibilityTimeout: 600
 # ==========================================
 # SNS
 # ==========================================
