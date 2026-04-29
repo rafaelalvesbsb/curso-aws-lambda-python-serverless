@@ -4,7 +4,4 @@ phases:
   build:
     commands:
       - echo "Deploy Infra"
-      - aws cloudformation deploy \
-          --template-file agf-data-pipeline/infra/template.yaml \
-          --stack-name agfi-infra-dev \
-          --capabilities CAPABILITY_NAMED_IAM
+      - aws cloudformation deploy --template-file agf-data-pipeline/infra/template.yaml --stack-name agfi-infra-dev --capabilities CAPABILITY_NAMED_IAM
