@@ -3,6 +3,7 @@ version: 0.2
 phases:
   build:
     commands:
+      - echo "Deploy Infra"
       - aws cloudformation deploy \
           --template-file infra/template.yaml \
           --stack-name agfi-infra-dev \
