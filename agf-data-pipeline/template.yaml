@@ -130,7 +130,7 @@ Resources:
     Properties:
       LayerName: !Sub 'agfi-shared-libs-${Environment}'
       Description: Shared Python libraries (BTG, AWS Clients, Core)
-      ContentUri: layers/shared-libs/
+      ContentUri: /shared-libs/
       CompatibleRuntimes:
         - python3.11
       CompatibleArchitectures:
