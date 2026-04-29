@@ -1,260 +1,120 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  AGFI Data Pipeline — Lambda stack (compute resources).
-  Stack: agfi-lambda-{Environment}
-  Pré-requisito: stack agfi-infra-{Environment} deployado via infra/deploy.sh
-  #
-  # Este template contém APENAS recursos de compute (Lambdas, API Gateway, Layer, SNS).
-  # Recursos persistentes (S3, SQS, DynamoDB, API GW Domain) vivem no stack
-  # agfi-infra-{Environment} e são passados como parâmetros via infra/.outputs.env.
-  #
-  # API Gateway v2 (HTTP API) com custom domain mapping — LocalStack roteia pelo
-  # header Host: <WebhookDomainName> diretamente para esta API (não para S3).
 
-# ==========================================
-# GLOBAL CONFIGURATION
-# ==========================================
+Description: AGFI Data Pipeline — Lambda stack
+
 Globals:
   Function:
     Runtime: python3.11
+    Timeout: 300
     Architectures:
       - x86_64
-    Timeout: 300
-    Environment:
-      Variables:
-        ENVIRONMENT: !Ref Environment
-        LOG_LEVEL: !Ref LogLevel
-        BTG_CLIENT_ID: !Ref BTGClientId
-        BTG_CLIENT_SECRET: !Ref BTGClientSecret
-        BTG_BASE_URL: !Ref BTGBaseUrl
-        S3_BUCKET: !Ref DataLakeBucketName
-        SQS_QUEUE_URL: !Ref SyncQueueUrl
-        SYNC_STATE_TABLE: !Ref SyncStateTableName
-        AWS_ENDPOINT_URL: !Ref AwsEndpointUrl
 
-# ==========================================
-# PARAMETERS
-# ==========================================
 Parameters:
   Environment:
     Type: String
     Default: dev
     AllowedValues: [dev, staging, prod]
 
-  AwsEndpointUrl:
-    Type: String
-    Default: ""
-    Description: AWS Endpoint URL (vazio em produção, http://localstack:4566 no LocalStack)
-
-  LogLevel:
-    Type: String
-    Default: INFO
-    AllowedValues: [DEBUG, INFO, WARNING, ERROR]
-    Description: Log Level for Lambda functions
-
-  BTGClientId:
-    Type: String
-    Description: BTG Pactual Client ID
-    Default: ''
-
-  BTGClientSecret:
-    Type: String
-    NoEcho: true
-    Description: BTG Pactual Client Secret
-    Default: ''
-
-  BTGBaseUrl:
-    Type: String
-    Description: BTG Pactual API Base URL
-    Default: 'https://api.btgpactual.com'
-
-  # ── Outputs do stack agfi-infra-{Environment} ─────────────────────
-  # Populados automaticamente pelo homelab.sh via infra/.outputs.env
-
-  DataLakeBucketName:
-    Type: String
-    Description: Nome do bucket S3 (output do stack agfi-infra)
-    Default: 'agfi-data-lake-dev'
-
-  SyncQueueUrl:
-    Type: String
-    Description: URL da fila SQS (output do stack agfi-infra)
-    Default: ''
-
   SyncQueueArn:
     Type: String
-    Description: ARN da fila SQS (output do stack agfi-infra)
-    Default: ''
+    Description: ARN da fila SQS (OBRIGATÓRIO)
 
   SyncQueueDLQArn:
     Type: String
-    Description: ARN da Dead Letter Queue SQS (output do stack agfi-infra)
-    Default: ''
+    Description: ARN da DLQ (OBRIGATÓRIO)
 
   SyncQueueName:
     Type: String
-    Description: Nome da fila SQS (output do stack agfi-infra)
-    Default: 'agfi-sync-queue-dev'
+    Default: agfi-sync-queue-dev
+
+  DataLakeBucketName:
+    Type: String
+    Default: agfi-data-lake-dev
 
   SyncStateTableName:
     Type: String
-    Description: Nome da tabela DynamoDB de sync state (output do stack agfi-infra)
-    Default: 'agfi-sync-state-dev'
+    Default: agfi-sync-state-dev
 
-  WebhookDomainName:
-    Type: String
-    Description: Custom domain name para o webhook (output do stack agfi-infra)
-    Default: 'testefastapi.alphaspark.com.br'
-
-# ==========================================
-# RESOURCES
-# ==========================================
 Resources:
 
-  # ── SNS TOPIC — Notifications ─────────────────────────────────────
+# ==========================================
+# SNS
+# ==========================================
   NotificationsTopic:
     Type: AWS::SNS::Topic
     Properties:
       TopicName: !Sub 'agfi-notifications-${Environment}'
-      DisplayName: AGFI Pipeline Notifications
-      Tags:
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: Project
-          Value: AGFI
 
-  # ── LAMBDA LAYER ──────────────────────────────────────────────────
-  SharedLibrariesLayer:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      LayerName: !Sub 'agfi-shared-libs-${Environment}'
-      Description: Shared Python libraries (BTG, AWS Clients, Core)
-      ContentUri: layers/shared-libs/
-      CompatibleRuntimes:
-        - python3.11
-      CompatibleArchitectures:
-        - x86_64
-      RetentionPolicy: Retain
-    Metadata:
-      BuildMethod: python3.11
-      BuildArchitecture: x86_64
+# ==========================================
+# LAMBDA FUNCTIONS
+# ==========================================
 
-  # ── LAMBDA FUNCTIONS ──────────────────────────────────────────────
-
-  # 1. BTG Webhook Receiver
   BTGWebhookFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub 'agfi-btg-webhook-${Environment}'
       CodeUri: handlers/
       Handler: webhook_receiver.lambda_handler
-      Description: Receives webhooks from BTG and enqueues for processing
-      Layers:
-        - !Ref SharedLibrariesLayer
       Policies:
         - SQSSendMessagePolicy:
             QueueName: !Ref SyncQueueName
-        - SNSPublishMessagePolicy:
-            TopicName: !GetAtt NotificationsTopic.TopicName
 
-  # 2. BTG Request Report (Scheduled)
-  # NOTA: Schedule event omitido — LocalStack não consegue resolver recursos
-  # EventBridge gerados pelo SAM transform durante criação de changeset.
-  # Para teste local: awslocal lambda invoke --function-name agfi-btg-request-report-dev /tmp/out.json
-  # Em produção AWS, adicionar evento Schedule EventBridge aqui.
   BTGRequestReportFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub 'agfi-btg-request-report-${Environment}'
       CodeUri: handlers/
       Handler: btg_requests.lambda_handler
-      Description: Requests reports from BTG API on schedule
-      Timeout: 180  # 9+ relatórios × ~7s cada (API + 5s wait) = ~63s mínimo; 180s com folga
-      MemorySize: 256
-      ReservedConcurrentExecutions: 1  # serializa execuções — evita race condition de múltiplas invocações simultâneas
-      Layers:
-        - !Ref SharedLibrariesLayer
       Policies:
-        - SNSPublishMessagePolicy:
-            TopicName: !GetAtt NotificationsTopic.TopicName
         - DynamoDBCrudPolicy:
             TableName: !Ref SyncStateTableName
 
-  # 3. SQS Message Processor
   SQSProcessorFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub 'agfi-sqs-processor-${Environment}'
       CodeUri: handlers/
       Handler: data_processor.lambda_handler
-      Description: Downloads files from BTG signed URLs and uploads to S3 Data Lake
-      MemorySize: 512  # position-by-partner-refresh é um ZIP de ~11MB; 128MB causa OOM silencioso
-      ReservedConcurrentExecutions: 5
-      Layers:
-        - !Ref SharedLibrariesLayer
       Policies:
         - S3CrudPolicy:
             BucketName: !Ref DataLakeBucketName
         - SQSPollerPolicy:
             QueueName: !Ref SyncQueueName
-        - SNSPublishMessagePolicy:
-            TopicName: !GetAtt NotificationsTopic.TopicName
+
       Events:
         SQSEvent:
           Type: SQS
           Properties:
-            Queue: !Ref SyncQueueArn
+            Queue: !Ref SyncQueueArn   # ✅ CORRIGIDO
             BatchSize: 1
-            MaximumBatchingWindowInSeconds: 0
 
-  # 4. BTG DLQ Reconcile
-  # Triggered pela Dead Letter Queue — re-solicita relatórios falhos ao BTG API.
-  # Usa DynamoDB para contar retentativas e evitar loops infinitos (max 3/mensagem).
   BTGDLQReconcileFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub 'agfi-btg-dlq-reconcile-${Environment}'
       CodeUri: handlers/
       Handler: btg_dlq_reconcile.lambda_handler
-      Description: Re-requests failed BTG reports from DLQ with retry tracking via DynamoDB
-      Timeout: 120
-      MemorySize: 256
-      Layers:
-        - !Ref SharedLibrariesLayer
-      Environment:
-        Variables:
-          SNS_TOPIC_ARN: !Ref NotificationsTopic
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref SyncStateTableName
-        - SNSPublishMessagePolicy:
-            TopicName: !GetAtt NotificationsTopic.TopicName
-        - SQSPollerPolicy:
-            QueueName: !Sub 'agfi-sync-queue-dlq-${Environment}'
-        - LambdaInvokePolicy:
-            FunctionName: !Sub 'agfi-btg-request-report-${Environment}'
+
       Events:
         DLQEvent:
           Type: SQS
           Properties:
-            Queue: !Ref SyncQueueDLQArn
+            Queue: !Ref SyncQueueDLQArn   # ✅ CORRIGIDO
             BatchSize: 1
-            MaximumBatchingWindowInSeconds: 0
 
-  # ── API GATEWAY v2 (HTTP API) — Webhook Receiver ──────────────────
-  # Pure CloudFormation — NOT AWS::Serverless::Api with SAM Events.
-  # Razão: SAM transform gera Lambda permissions com Fn::Sub que o LocalStack
-  # não consegue resolver. Usamos Fn::GetAtt + Fn::Join.
-  #
-  # Custom domain mapping: LocalStack roteia pelo header Host para esta API,
-  # não para o S3 — resolve o problema de /webhook/* ser interpretado como S3.
+# ==========================================
+# API GATEWAY
+# ==========================================
+
   WebhookApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: !Sub 'agfi-webhook-api-${Environment}'
       ProtocolType: HTTP
-      Description: AGFI webhook receiver for BTG report callbacks
 
   WebhookIntegration:
     Type: AWS::ApiGatewayV2::Integration
@@ -268,7 +128,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref WebhookApi
-      RouteKey: 'POST /webhook/{proxy+}'
+      RouteKey: 'POST /webhook'
       Target: !Join ['/', ['integrations', !Ref WebhookIntegration]]
 
   WebhookStage:
@@ -278,112 +138,27 @@ Resources:
       StageName: '$default'
       AutoDeploy: true
 
-  #WebhookApiMapping:
-   # Type: AWS::ApiGatewayV2::ApiMapping
-    #DependsOn: WebhookStage
-    #Properties:
-    #  DomainName: !Ref WebhookDomainName
-    #  ApiId: !Ref WebhookApi
-    #  Stage: '$default'
-
-  WebhookLambdaPermission:
+  WebhookPermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !GetAtt BTGWebhookFunction.Arn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Join
-        - ''
-        - - 'arn:aws:execute-api:'
-          - !Ref AWS::Region
-          - ':'
-          - !Ref AWS::AccountId
-          - ':'
-          - !Ref WebhookApi
-          - '/*/*'
 
-  # ── CLOUDWATCH LOG GROUPS ─────────────────────────────────────────
-  BTGWebhookLogGroup:
+# ==========================================
+# LOGS
+# ==========================================
+
+  WebhookLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub '/aws/lambda/agfi-btg-webhook-${Environment}'
       RetentionInDays: 7
 
-  BTGRequestReportLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub '/aws/lambda/agfi-btg-request-report-${Environment}'
-      RetentionInDays: 7
-
-  SQSProcessorLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub '/aws/lambda/agfi-sqs-processor-${Environment}'
-      RetentionInDays: 7
-
-  BTGDLQReconcileLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub '/aws/lambda/agfi-btg-dlq-reconcile-${Environment}'
-      RetentionInDays: 7
-
-  # ── EVENTBRIDGE — Daily Sync (seg–sex, 08:00 BRT) ────────────────
-  # DESABILITADO no LocalStack — EventBridge é mock e não executa regras.
-  # Scheduling em LocalStack via n8n (workflow: AGFI — BTG Daily Sync).
-  # Reabilitar para deploy na AWS real (descomentar os dois recursos abaixo).
-  #
-  # BRT = UTC-3  →  08:00 BRT = 11:00 UTC
-  # Cron AWS: cron(Minuto Hora Dia-mês Mês Dia-semana Ano)
-  #   ?  em Dia-mês = obrigatório quando Dia-semana está especificado
-  #   MON-FRI = segunda a sexta
-  #
-  # DailySyncRule:
-  #   Type: AWS::Events::Rule
-  #   Properties:
-  #     Name: !Sub 'agfi-daily-btg-request-${Environment}'
-  #     Description: 'Dispara relatórios BTG de seg a sex às 08:00 BRT (11:00 UTC)'
-  #     ScheduleExpression: 'cron(0 11 ? * MON-FRI *)'  # seg–sex às 08:00 BRT (11:00 UTC)
-  #     State: ENABLED
-  #     Targets:
-  #       - Arn: !GetAtt BTGRequestReportFunction.Arn
-  #         Id: BTGRequestReportTarget
-  #
-  # DailySyncPermission:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !GetAtt BTGRequestReportFunction.Arn
-  #     Action: lambda:InvokeFunction
-  #     Principal: events.amazonaws.com
-  #     SourceArn: !GetAtt DailySyncRule.Arn
-
 # ==========================================
 # OUTPUTS
 # ==========================================
+
 Outputs:
-  WebhookUrl:
-    Description: API Gateway URL
-    Value: !Sub 'https://${WebhookApi}.execute-api.${AWS::Region}.amazonaws.com/webhook'
-
-  WebhookApiId:
-    Description: API Gateway v2 API ID
-    Value: !Ref WebhookApi
-
-  DataLakeBucket:
-    Description: S3 Data Lake bucket (do stack agfi-infra)
-    Value: !Ref DataLakeBucketName
-
-  SyncQueueUrl:
-    Description: SQS Queue URL (do stack agfi-infra)
-    Value: !Ref SyncQueueUrl
-
-  SyncQueueArn:
-    Description: SQS Queue ARN (do stack agfi-infra)
-    Value: !Ref SyncQueueArn
-
-  SyncStateTableName:
-    Description: DynamoDB Sync State table (do stack agfi-infra)
-    Value: !Ref SyncStateTableName
-
-  NotificationsTopicArn:
-    Description: SNS Topic ARN for notifications
-    Value: !Ref NotificationsTopic
+  ApiUrl:
+    Value: !Sub 'https://${WebhookApi}.execute-api.${AWS::Region}.amazonaws.com'
