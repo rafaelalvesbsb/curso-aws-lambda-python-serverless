@@ -60,7 +60,7 @@ Resources:
         Type: LINUX_CONTAINER
       Source:
         Type: CODEPIPELINE
-        BuildSpec: buildspec-infra.yml
+        BuildSpec: agf-data-pipeline/buildspec-infra.yml
 
   BuildApp:
     Type: AWS::CodeBuild::Project
@@ -75,7 +75,7 @@ Resources:
         Type: LINUX_CONTAINER
       Source:
         Type: CODEPIPELINE
-        BuildSpec: buildspec-app.yml
+        BuildSpec: agf-data-pipeline/buildspec-app.yml
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
