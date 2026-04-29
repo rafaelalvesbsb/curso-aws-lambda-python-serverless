@@ -9,12 +9,8 @@ phases:
 
   build:
     commands:
-      - sam build
+      - sam build --template-file agf-data-pipeline/template.yaml
 
   post_build:
     commands:
-      - sam deploy \
-          --stack-name agfi-lambda-dev \
-          --no-confirm-changeset \
-          --no-fail-on-empty-changeset \
-          --capabilities CAPABILITY_NAMED_IAM
+      - sam deploy --template-file agf-data-pipeline/template.yaml --stack-name agfi-lambda-dev --no-confirm-changeset --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
