@@ -34,7 +34,8 @@ phases:
 
       - echo "DEPLOY INICIANDO"
 
-      - sam deploy \
+      - |
+        sam deploy \
           --template-file .aws-sam/build/template.yaml \
           --stack-name agfi-lambda-dev \
           --s3-bucket agfi-pipeline-artifactbucket-o3htnl0pnv5u \
