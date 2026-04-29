@@ -1,0 +1,136 @@
+openapi: 3.0.1
+info:
+  title: "API de Performance"
+  description: |
+    API de consulta de relatorio de Informação de performance das contas.
+  version: 3.1.2.0
+servers:
+  - url: https://api.btgpactual.com/iaas-profitability
+paths:
+  /api/v1/performance-report/account:
+    post:
+      tags:
+        - post-performance-report-by-account
+      summary: Endpoint que busca o relatório de performance por conta e período.
+      description: |
+        Endpoint responsável pela busca do arquivo de relatório de performance, por conta e período.
+
+        ***Uma vez solicitado, o relatório gerado para aquele periodo solicitado ficara estatico por 3 horas***
+
+        ***O relatório solicitado será entregue em formado PDF e dentro de um arquivo ZIP***
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Performance (performance-report)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: N/A (Não se aplica)
+
+        Janela de busca: A diferença entre a data inicial e final não pode ser maior que 30 dias.
+
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PerformanceRequestFilter"
+        required: true
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: "#/components/schemas/ErrorMetadata"
+    PerformanceRequestFilter:
+      title: Request - Performance por conta e data
+      type: object
+      properties:
+        startDate:
+          description: "Data inicio que deseja consultar"
+          example: "2022-08-19"
+          pattern: "YYYY-MM-DD"
+          type: string
+        endDate:
+          description: "Data fim que deseja consultar"
+          example: "2024-08-19"
+          pattern: "YYYY-MM-DD"
+          type: string
+        accountNumber:
+          description: "Numero da conta que deseja consultar"
+          example: "000000000"
+          type: string

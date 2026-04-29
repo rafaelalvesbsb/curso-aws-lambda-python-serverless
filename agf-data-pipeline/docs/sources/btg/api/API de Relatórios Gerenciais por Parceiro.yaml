@@ -1,0 +1,2923 @@
+openapi: 3.0.2
+info:
+  title: API de Relatórios Gerenciais por Parceiro
+  description: API responsável por disponibilizar arquivos de relatório gerenciais para webhook de parceiros
+  version: 3.1.2.0
+servers:
+  - url: https://api.btgpactual.com/api-rm-reports
+paths:
+  /api/v1/rm-reports/monthly-tir:
+    get:
+      tags:
+        - get-rm-reports-montly-tir
+      summary: Busca relatório gerencial de TIR mensal por parceiro
+      description: |
+        Endpoint responsável pela busca de relatório gerencial para Taxa Interna de Retorno (TIR) mensal por parceiro.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório TIR Mensal (rm-reports-monthly-tir)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 3x ao dia, às 8h, 15h e 20h
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getMonthlyTIRReport
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/registration-data:
+    get:
+      tags:
+        - get-rm-reports-registration-data
+      summary: Busca relatório gerencial de dados cadastrais.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com as informações de dados cadastrais.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Dados Cadastrais (rm-reports-registration-data)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 3x ao dia, às 7h, 15h e 20h
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getRegistrationDataReport
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/onboarding-data:
+    get:
+      tags:
+        - get-rm-reports-onboarding-data
+      summary: Busca relatório gerencial com as informações de onboarding.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com as informações de informações complementares de Onboarding por parceiro.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Dados Onboarding (rm-reports-onboarding-data)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 3x ao dia, às 8h, 15h e 20h
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getOnboardingDataReport
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/movement:
+    get:
+      tags:
+        - get-rm-reports-movement
+      summary: Busca relatório gerencial de movimentações dos últimos 20 dias.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com as movimentações do escritório dos últimos 20 dias.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Movimentação (rm-reports-movement)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 3x ao dia, às 7h, 15h e 20h
+
+        Janela de dados: Últimos 20 dias
+
+      operationId: getMovementReport
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/monthly-movement:
+    post:
+      tags:
+        - post-rm-reports-monthly-movement
+      summary: Busca relatório gerencial de Fechamento de Movimentação Mensal do parceiro
+      description: |
+        Endpoint responsável pela busca de relatório gerencial de Fechamento de Movimentação Mensal do parceiro. 
+
+        O arquivo contém as movimentações de um determinado mês do escritório e deve ser solicitado quando existir a necessidade de carga com possíveis correções ou mudanças.
+
+        O escritório pode solicitar qualquer mês retroagindo até 12 meses da data atual, e **o mês anterior após o sétimo dia do mês corrente**.
+
+        ***O arquivo é gerado e enviado uma única vez após sua solicitação, sob demanda, mas pode ser solicitado novamente.***
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Fechamento de Movimentação Mensal (rm-reports-monthly-movement)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: N/A *(Não se Aplica)* 
+
+        Janela de dados: Limite máximo de 12 meses retroativos ao mês atual
+
+      operationId: getMonthlyMovement
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefDateRequestDTO"
+        required: true
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/funds-information:
+    get:
+      tags:
+        - get-rm-reports-funds-information
+      summary: Busca relatório gerencial de Catálogo de Fundos
+      description: |
+        Endpoint responsável pela busca de relatório gerencial para Catálogo de todos os Fundos disponíveis. 
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Fundos de Informação (rm-reports-funds-information)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 3x ao dia, às 8h, 15h e 20h
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getFundsInformationReport
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/funds:
+    get:
+      tags:
+        - get-rm-reports-funds
+      summary: Busca relatório gerencial de Fundos do parceiro
+      description: |
+        Endpoint responsável pela busca de relatório gerencial de Fundos do parceiro.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Fundos (rm-reports-funds)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 3x ao dia, às 8h, 15h e 20h
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getFundsReport
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/position:
+    get:
+      tags:
+        - get-rm-reports-position
+      summary: Busca relatório gerencial de posições.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial posições do escritório, respeitando a vigência informada no legado, do último dia, e retornara a posição tanto D0(a data da chamada) quando D-1(dia anterior a chamada).
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Posição (rm-reports-position)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 3x ao dia, às 7h, 15h e 20h
+
+        Janela de dados: D-1 até D0
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/position-by-date:
+    post:
+      tags:
+        - post-rm-reports-position-by-date
+      summary: Busca relatório gerencial de posições por data.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial posições do escritório, filtrando por data, respeitando a vigência informada no legado, do último dia.
+
+        O arquivo contém as posições de um determinado dia de todas as contas do escritório e deve ser solicitado quando existir a necessidade de carga com possíveis correções ou mudanças. 
+        ***Dados referente aos últimos 7 dias podem sofrer alterações.***
+
+        ***O arquivo é gerado e enviado uma única vez após sua solicitação, sob demanda, mas pode ser solicitado novamente.***
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Posição Gerencial por data(rm-reports-position-by-date)**.
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: N/A (Não se Aplica)
+
+        Janela de dados: N/A (Não se Aplica)
+
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefDatePositionRequestDTO"
+        required: true
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/representative:
+    get:
+      tags:
+        - get-rm-reports-representative
+      summary: Busca relatório gerencial de representante legal da conta.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial de representante legal das contas, respeitando a vigência informada no legado, em D-1.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Informações de Representante Legal de Conta (rm-reports-representative)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 7h30
+
+        Janela de dados: D-1
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/account-link:
+    get:
+      tags:
+        - get-rm-reports-account-link
+      summary: Busca relatório gerencial de vínculos de contas.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial de contas vinculadas ao escritório, respeitando a vigência informada no legado, em D-1.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Informações de Vinculo de Conta (rm-reports-account-link)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 7h
+
+        Janela de dados: D-1
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/account-base:
+    get:
+      tags:
+        - get-rm-reports-account-base
+      summary: Busca relatório gerencial base BTG.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial da base de contas BTG, respeitando a vigência informada no legado, em D-1.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Base de Contas - Base BTG (rm-reports-account-base)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 7h30
+
+        Janela de dados: D-1
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/openfinance:
+    get:
+      tags:
+        - get-rm-reports-openfinance
+      summary: Busca relatório gerencial Open Finance.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com as informações das contas com PL fora do BTG, por mercado e ativo.
+
+        Possui o conceito de posições transmitidas e recebidas, podendo **duplicar** a posição de acordo com o número de instituições 
+        a quem se transmitem os dados, mas uma única vez para recebimento, **independente da quantidade** de instituições que entreguem a informação.
+        
+        *Exemplo 1:*
+
+        Em transmissões para três bancos diferentes, o BTG possuirá três linhas iguais no relatório, uma para cada instituição.
+
+        *Exemplo 2:*
+
+        Em transmissão para um único banco mais o recebimento por dois bancos diferentes, o BTG possuirá 
+        duas linhas no relatório, sendo uma correspondente à transmissão e outra ao recebimento.
+        
+        ---
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Open Finance (rm-reports-openfinance)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 7h30
+
+        Janela de dados: D-1
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/consent-openfinance:
+    get:
+      tags:
+        - get-rm-reports-consent-openfinance
+      summary: Busca relatório gerencial Open finance - Consentimento.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial de contas que deram consentimento para recepção e transmissão de Open Finance.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Open Finance - Consentimento (rm-reports-consent-openfinance)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 7h30
+
+        Janela de dados: D-1
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/nnm:
+    get:
+      tags:
+        - get-rm-reports-nnm
+      summary: Busca relatório gerencial NNM Gerencial dos últimos 20 dias.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial de NNM do escritório.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 15hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de NNM Gerencial (rm-reports-nnm)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 15h
+
+        Janela de dados: Últimos 20 dias contando a partir de D-1
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/monthly-nnm:
+    post:
+      tags:
+        - post-rm-reports-monthly-nnm
+      summary: Busca relatório gerencial de Fechamento de NNM Mensal
+      description: |
+        Endpoint responsável pela busca de relatório gerencial de Fechamento de Movimentação Mensal do parceiro. 
+
+        O arquivo contém as informações de Net New Money de um determinado mês do escritório e deve ser solicitado quando existir a necessidade de carga com possíveis correções ou mudanças.
+
+        O escritório pode solicitar qualquer mês retroagindo até 12 meses da data atual, e **o mês anterior após o sétimo dia do mês corrente**.
+
+        ***O arquivo é gerado e enviado uma única vez após sua solicitação, sob demanda, mas pode ser solicitado novamente.***
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Fechamento de NNM Mensal (rm-reports-monthly-nnm)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: N/A (Não se Aplica)
+
+        Janela de dados: Limite máximo de 12 meses retroativos ao mês atual
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefDateRequestDTO"
+        required: true
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/exchange-operation:
+    get:
+      tags:
+        - get-rm-reports-exchange-operation
+      summary: Busca relatório gerencial com as operações de Câmbio dos últimos 5 dias.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial de Operações de Câmbio do escritório.
+
+        Não inclui as operações realizadas ou recebidas nas contas banking BTG, apenas contas investimento.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 15hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Operações de Câmbio (rm-reports-exchange-operation)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 15h
+
+        Janela de dados: Últimos 5 dias
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/pension-payment:
+    get:
+      tags:
+        - get-rm-reports-pension-payment
+      summary: Busca relatório gerencial de pagamentos de previdência do escritório.
+      description: |
+        Endpoint responsável pela busca das informações de pagamentos de previdência BTG, boleto e débito automático, para os pagamentos com status pago ou cancelado. 
+
+        Contempla o último dia de processamento de até 30 dias retroativos. 
+        Demais situações, trarão seus últimos status.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 15hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Pagamento de Previdência (rm-reports-pension-payment)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 15h
+
+        Janela de dados: D-30 a D0
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/operations:
+    get:
+      tags:
+        - get-rm-reports-operations
+      summary: Busca relatório gerencial com as operações do escritório nos últimos 5 dias.
+      description: |
+        Endpoint responsável pela busca das últimas operações realizadas pelas contas do escritório nos últimos 5 dias. 
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 15hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Operações (rm-reports-operations)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 8x ao dia, às 8h, 10h, 11h, 12h, 14h, 16h, 18h e 20h
+
+        Janela de dados: D-5 a D0
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/banking:
+    get:
+      tags:
+        - post-rm-reports-banking
+      summary: Busca relatório gerencial de dados banking por parceiro
+      description: |
+        Endpoint responsável pela busca de relatório gerencial de Dados Banking Por Parceiro. 
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 15hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Informações de Banking (rm-reports-banking)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 16h
+
+        Janela de dados: D-1
+
+      operationId: getBanking
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/credit-card:
+    get:
+      tags:
+        - get-rm-reports-credit-card
+      summary: Busca relatório gerencial de extrato de cartão de crédito Por Parceiro
+      description: |
+        Endpoint responsável pela busca de relatório gerencial de gastos do cartão de crédito Por Parceiro. 
+
+        Arquivo com as análises de gastos do cartão de crédito contém os principais segmentos (saúde, lazer, restaurantes etc) de maior valor de giro.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 15hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Informações de Extrato de Cartão (rm-reports-credit-card)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 15h
+
+        Janela de dados: D-1
+
+      operationId: getBanking
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/fee-fixo:
+    get:
+      tags:
+        - get-rm-reports-fee-fixo
+      summary: Busca relatório gerencial de FEE Fixo Por Parceiro
+      description: |
+        Endpoint responsável pela busca de relatório de FEE Fixo Por Parceiro. 
+
+        Este arquivo entrega as contas que receberam a oferta do FEE Fixo, data de envio, data de expiração do convite, data de aceite, 
+        taxa específica, taxa escritório e tabela com faixa de valores.
+
+        O separador deste relatório é diferente dos demais, **utiliza ponto e víngula (;).**
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). 
+        E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma 
+        assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 15hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em 
+        **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de FEE Fixo (rm-reports-fee-fixo)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 3x ao dia, às 8h, 15h e 20h
+
+        Janela de dados: D0
+
+      operationId: getFeeFixo
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/registration-data-complete:
+    get:
+      tags:
+        - get-rm-reports-registration-data-complete
+      deprecated: true
+      summary: Busca relatório gerencial de dados cadastrais.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com as informações de dados cadastrais de contas, fundos e clubes.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Dados Cadastrais Completo(rm-reports-registration-data-complete)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 7h
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getRegistrationDataReport
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/registration-data-club-funds:
+    get:
+      tags:
+        - get-rm-reports-registration-data-club-funds
+      summary: Busca relatório gerencial de dados cadastrais exclusivo para contas Fundos e contas Clube.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com as informações de dados cadastrais de contas, apenas as de tipo Fundos e Clube.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 7hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Dados Cadastrais Clube e Fundos (rm-reports-registration-data-club-funds)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 7h
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getRegistrationDataReport
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/principality:
+    get:
+      tags:
+        - get-rm-reports-principality
+      summary: Busca relatório gerencial de principalidade.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com as informações de principalidade e os critérios utilizados para chegar ao resultado.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 16hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Principalidade (rm-reports-principality)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 16h
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getPrincipality
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/closed-fund-reserve:
+    get:
+      tags:
+        - get-rm-reports-closed-fund-reserve
+      summary: Busca relatório gerencial de reserva de Fundo Fechado.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com as informações de reserva de Fundo Fechado dos últimos 5 dias.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Reserva de Fundo Fechado (rm-reports-closed-fund-reserve)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 3x ao dia, às 8h, 15h e 20h
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getClosedFundsReserve
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/pre-operations:
+    get:
+      tags:
+        - get-rm-reports-pre-operations
+      summary: Busca relatório gerencial de Pré-Operações.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com as informações de Pré-Operações em D-1 e D0.
+
+        Considera pré-operações com status:
+        - Cancelamento Solicitado;
+        - Pendente de Documento;
+        - Pendente de aprovação.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, 
+        com nome de **Relatório de Pré-Operações (rm-reports-pre-operations)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 8x ao dia, às 8h, 10h, 11h, 12h, 14h, 16h, 18h e 20h
+
+        Janela de dados: D-1 a D0
+
+      operationId: getPreOperations
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/pension-portability:
+    get:
+      tags:
+        - get-rm-reports-pension-portability
+      summary: Busca relatório gerencial de Portabilidade de Previdência.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com as informações de entrada e saída de Portabilidade de Previdência, solicitados nos últimos 5 dias.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, 
+        com nome de **Relatório de Portabilidade de Previdência (rm-reports-pension-portability)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 7h30
+
+        Janela de dados: Até D-5
+
+      operationId: getPensionPortability
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/account-link-funds-club:
+    get:
+      tags:
+        - get-rm-reports-account-link-funds-club
+      summary: Busca relatório gerencial de Vínculo de Conta Fundos e Clube.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com as informações de Vínculo de Conta Fundos e Contas Clube.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, 
+        com nome de **Relatório de Vínculo de Contas Fundos e Clube (rm-reports-account-link-funds-club)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 7h
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getAccountLinkFundsClub
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/asset-allocation:
+    get:
+      tags:
+        - get-rm-reports-asset-allocation
+      summary: Busca relatório gerencial de Alocação de ativos.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com a análise estratégica da carteira para alinhamento com boas práticas de alocação de ativos.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, 
+        com nome de **Relatório de Alocação de Ativos (rm-reports-asset-allocation)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 13h30
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getAssetAllocation
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/trade-idea:
+    get:
+      tags:
+        - get-rm-reports-trade-idea
+      summary: Busca relatório gerencial de Recomendação de Operação.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com informações de recomendações de operações de rendas fixas, contendo análises de ágio e deságio.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, 
+        com nome de **Recomendação de Operação (rm-reports-trade-idea)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 13h30
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getTradeIdea
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/account-limit:
+    get:
+      tags:
+        - get-rm-reports-account-limit
+      summary: Busca relatório gerencial de limite operacional da conta.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com informações de limite total da conta, mais garantia.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, 
+        com nome de **Limite Operacional de Conta (rm-reports-account-limit)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 07h30
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getAccountLimit
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/rm-reports/judicial-block:
+    get:
+      tags:
+        - get-rm-reports-judicial-block
+      summary: Busca relatório gerencial de Bloqueio Judicial.
+      description: |
+        Endpoint responsável pela busca de relatório gerencial com informações históricas de bloqueio judicial, a partir de Outubro/2023, contemplando apenas data de inicio do bloqueio. 
+        
+        Não mostra atualizações de processos.
+
+        ***O arquivo só será gerado na janela seguinte à data e horário da assinatura do Webhook (se houverem dados). E sempre será retornado o último arquivo gerado.***
+
+        *Exemplo:*
+
+        *Assinando o Webhook no dia 16/06/2023 às 20h30: Deve-se aguardar a próxima janela para fazer a requisição na API ou será emitido um erro de forma assíncrona via Webhook com a seguinte mensagem:*
+
+        `Relatório não disponível. Por favor, aguarde a próxima janela de execução.`
+
+        *O arquivo só será gerado na janela seguinte (17/06/2023, às 8hrs) e o erro para de acontecer, pois passará a retornar a última versão disponível.*
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, 
+        com nome de **Bloqueio Judicial (rm-reports-judicial-block)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 07h30
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getJudicialBlock
+      parameters:
+        - name: x-id-partner-request
+          in: header
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: header
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: "#/components/schemas/ErrorMetadata"
+    RefDateRequestDTO:
+      title: refDateRequest
+      required:
+        - refMonth
+        - refYear
+      type: object
+      properties:
+        refMonth:
+          pattern: "MM"
+          type: string
+          description: O mês de referência (Campo Obrigatório)
+          example: "01"
+        refYear:
+          pattern: "YYYY"
+          type: string
+          description: O ano de referência (Campo Obrigatório)
+          example: "2023"
+    RefDatePositionRequestDTO:
+      title: refDatePositionRequest
+      required:
+        - refDay
+        - refMonth
+        - refYear
+      type: object
+      properties:
+        refDay:
+          pattern: "dd"
+          type: string
+          description: O dia de referência (Campo Obrigatório)
+          example: "01"
+        refMonth:
+          pattern: "MM"
+          type: string
+          description: O mês de referência (Campo Obrigatório)
+          example: "01"
+        refYear:
+          pattern: "YYYY"
+          type: string
+          description: O ano de referência (Campo Obrigatório)
+          example: "2024"
+    ExampleResponse:
+      title: Exemplo de Retorno - Banking
+      description: |
+        Dicionário de dados - API de dados Banking
+
+        Este é o dicionário de dados com os possíveis valores de retorno.
+        O arquivo final terá formato .CSV com os seguintes campos:
+
+        ---
+      properties:
+        nr_conta:
+          type: string
+          description: Número da conta investimento
+          example: "001234567"
+        nome_representante:
+          type: string
+          description: Primeiro Nome do representante da conta
+          example: "João Maria"
+        termo_consentimento:
+          type: string
+          description: Flag indicando se cliente possui termo de consentimento assinado
+          example: "Sim"
+        fopa:
+          type: string
+          description: Empresas que pagam a Folha de Pagamento pelo BTG.
+          example: "BANCO"
+        tipo_conta:
+          type: string
+          description: Tipo da conta (Corrente ou Salário)
+          example: "Conta Corrente"
+        primeira_ativacao_conta:
+          type: string
+          description: Flag indicando se cliente já efetuou em algum momento uma transação com o cartão de crédito, débito ou fez uma transferência.
+          example: "Sim"
+        conta_ativa_30dd:
+          type: string
+          description: Flag indicando se cliente fez alguma transação de débito ou possui conta corrente ativa nos últimos 30 dias.
+          example: "Sim"
+        cartao:
+          type: string
+          description: Apresentará "Contratado - Tipo" para o cartão que o cliente possuir, e "oferta - Tipo" para o cartão sugerido.
+          example: "Contratado - Exemplo"
+        pap_clean_cartao:
+          type: string
+          description: Limite ofertado no cartão de crédito.
+          example: "De 00k a 10K"
+        pap_lastreado_cartao:
+          type: string
+          description: Limite ofertado no cartão de crédito com garantia de pagamento do investflex "investimento".
+          example: "De 00k a 10K"
+        c_clean_cartao:
+          type: string
+          description: Limite que o cliente possui no cartão de crédito.
+          example: "De 00k a 3K"
+        c_lastreado_cartao:
+          type: string
+          description: Limite que o cliente possui no cartão de crédito com garantia de pagamento do investflex "investimento".
+          example: "De 00k a 3K"
+        primeira_ativacao_cartao:
+          type: string
+          description: Flag indicando se é a primeira transação do cartão virtual ou físico.
+          example: "Sim"
+        cartao_ativa_30dd:
+          type: string
+          description: Flag indicando se houve alguma transação de crédito nos últimos 30 dias.
+          example: "Sim"
+        cheque_aprovado:
+          type: string
+          description: Cheque especial Aprovado.
+          example: "de 0 a 3k"
+        cheque_contratado:
+          type: string
+          description: Limite do cheque especial contratado.
+          example: "100"
+        cp_contratado:
+          type: string
+          description: Crédito pessoal contratado.
+          example: "3000"
+        prioridade_contato_cp:
+          type: string
+          description: Apresenta se o cliente realizou uma simulação de cheque pessoal e se é alto propenso a adquirir o crédito pessoal.
+          example: "Fez simulação CP 15+ dias"
+        cobranca:
+          type: string
+          description: Cliente com algum produto em atraso. "Limite mais, Crédito pessoal e outros".
+          example: "Em dia"
+        saldo_banking:
+          type: string
+          description: Saldo que o cliente tem atualmente no banco.
+          example: "0"
+        prog_relacionamento:
+          type: string
+          description: Programa de relacionamento existente no cartão. Como Cashback, Bonus esfera ou livelo.
+          example: "Cashback"
+        seguro_vida:
+          type: string
+          description: Indica se o seguro de vida foi contratado.
+          example: "Contratado"
+        seguro_conta_cartao:
+          type: string
+          description: Indica se o seguro de Conta Cartão foi contratado.
+          example: "Contratado"
+        seguro_prestamista:
+          type: string
+          description: Indica se o seguro de prestamista foi contratado.
+          example: "Não Contratado"
+        assessor:
+          type: string
+          description: Assessor	Assessor responsável pela carteira do cliente.
+          example: "João José"
+        cd_cge_partner:
+          type: string
+          description: CGE do parceiro vinculado a conta
+          example: "999999"
+        dt_abertura_conta:
+          type: string
+          description: Data de Abertura da Conta
+          example: "2024-05-24"
+        dt_aquisicao_cartao:
+          type: string
+          description: Data de aquisição do cartão
+          example: "2024-06-04"
+        termo_cons_simplificado:
+          type: string
+          description: Flag indicando se o termo de consentimento foi aceito
+          example: "sim"
+        cons_produto_serviço:
+          type: string
+          description: Flag indicando se o termo de consentimento foi aceito
+          example: "sim"
+        vl_auc_total:
+          type: number
+          description: Valor total
+          example: 1122.33
+        venda_via_portal:
+          type: string
+          description: Informação sobre disponibilidade da venda
+          example: "Venda Disponível"
+        carr_abandonado_cartao:
+          type: string
+          description: Flag indicando se o carrinho foi abandonado com cartão preenchido
+          example: "Sim"
+        cliente_heavy_user:
+          type: string
+          description: Flag indicando se o cliente é um Heavy User
+          example: "Sim"
+        cp_carr_abandonado:
+          type: string
+          description: Flag indicando se o carrinho foi abandonado
+          example: "Sim"
+        deb_automático:
+          type: string
+          description: Flag indicando se existe cadastro de débito automático
+          example: "Sim"
+        portabilidade:
+          type: string
+          description: Flag indicando se houve portabilidade
+          example: "Sim"
+        chave_pix:
+          type: string
+          description: Chave Pix do cadastrada
+          example: "Chave pix"
+        modulo_viagem:
+          type: string
+          description: Flag de Modulo viagem
+          example: "Sim"
+        modulo_seguranca:
+          type: string
+          description: Flag de Modulo segurança
+          example: "Não"
+        modulo_transacional:
+          type: string
+          description: Flag de Modulo transacional
+          example: "Não"
+        modulo_investimento:
+          type: string
+          description: Flag de Modulo investimento
+          example: "Não"

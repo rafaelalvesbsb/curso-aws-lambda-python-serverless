@@ -1,0 +1,521 @@
+openapi: 3.0.1
+info:
+  title: Visualização de Análise de Carteira Recomendada
+  description: Api responsável por consultar análise de carteira recomendada.
+  version: 3.1.1.0
+servers:
+  - url: https://api.btgpactual.com/iaas-recommended-equities
+paths:
+  /api/v1/recommended-equities-allocation:
+    get:
+      tags:
+        - get-recommended-equities-allocation
+      summary: Busca de análise de carteira recomendada.
+      description: |
+        Consulta a análise de carteira recomendada.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: getRecommendedEquitiesAllocation
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "200":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EquitiesResponseDTO"
+        "400":
+          description: Erro no headers da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/recommended-equities-allocation/portfolio:
+    get:
+      tags:
+        - get-recommended-equities-portfolio
+      summary: Busca de portifolio de carteira recomendada.
+      description: |
+        Consulta a análise de carteira recomendada.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: getRecommendedEquitiesAllocationPortfolio
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "200":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EquitiesResponseDTO"
+        "400":
+          description: Erro no headers da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Erro no headers da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/recommended-equities-allocation/analysis:
+    post:
+      tags:
+        - post-recommended-equities-analysis
+      summary: Busca de análise de carteira recomendada para o Parceiro.
+      description: |
+        Consulta a análise de carteira recomendada.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: getRecommendedEquitiesAllocationAnalysis
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FiltersDTO"
+      responses:
+        "200":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+        "400":
+          description: Erro no headers da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Erro no headers da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/recommended-equities-operation/period:
+    post:
+      tags:
+        - post-recommended-equities-operation-by-period
+      summary: Operações da conta por período (apenas ativos de Carteira Recomendada do Parceiro).
+      description: |
+        Consulta as operações por conta e periodo, considerando apenas os ativos adquiridos através da Análise de Carteira Recomendada do Parceiro.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getRecommendedEquitiesOperationByPeriod
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestOperationsDTO"
+      responses:
+        "200":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/OperationResponseDTO"
+        "400":
+          description: Erro no headers da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: "#/components/schemas/ErrorMetadata"
+    EquitiesResponseDTO:
+      type: object
+      title: Retorno da análise de carteira recomendada
+      description: |
+        Dicionário de dados - API de consulta e análise de carteira recomendada.
+
+        Este é o dicionário de dados com os possíveis valores de retorno.
+        A resposta terá formato 'json' com os seguintes campos:
+        ---
+      properties:
+        typeInitial:
+          type: string
+          description: A sigla do tipo da carteira
+          example: "DIV"
+        description:
+          type: string
+          description: A descrição da carteira naquele mês
+          example: "A carteira tem como objetivo encontrar as melhores empresas sob a ótica de geração total de valor ao acionista com foco na distribuição de proventos. Dessa forma, realizamos uma análise focada em ativos de alta qualidade, com resiliência de entrega de resultados e geração de caixa. A seleção dos ativos é feita de forma complementar entre a equipe de análise de empresas e estratégia do BTG Pactual, com uma revisão mensal da carteira."
+        name:
+          type: string
+          description: O nome da carteira
+          example: "Dividendos - Fevereiro/24"
+        fileName:
+          type: string
+          description: O endereço do arquivo com o relatório
+          example: "https://digital-research-uat.s3-sa-east-1.amazonaws.com/file/2024-02-02T121115.550_BTGDIVFEV24.pdf"
+        validityStart:
+          type: string
+          format: date-time
+          description: O inicio da vigência da carteira
+          example: "2024-02-01T00:00:00"
+        validityEnd:
+          type: string
+          format: date-time
+          description: O fim da vigência da carteira
+          example: "2024-02-29T23:59:59"
+        previousProfitability:
+          type: number
+          description: A rentabilidade do início da vigencia da carteira, do mês corrente, até o fechamento do dia anterior.
+          example: -1.1
+        accumulatedProfitability:
+          type: number
+          description: A rentabilidade acumulada desde o início da carteira, data de criação da carteira, até o fechamento do mês anterior.
+          example: 52.8
+        previousIndex:
+          type: number
+          description: O indexador da rentabilidade do início da vigência da carteira, do mês corrente, até o fechamento do dia anterior.
+          example: -3.5
+        accumulatedIndex:
+          type: number
+          description: O indexador da rentabilide acumulada desde o inicio da carteria, data de criação da carteira, até o fechamento do mês anterior.
+          example: 43.0
+        buyable:
+          type: boolean
+          description: Indicador se a carteira está disponível para compra ou não
+          example: true
+        assets:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetsDTO"
+    AssetDTO:
+      type: object
+      properties:
+        sector:
+          $ref: "#/components/schemas/SectorDTO"
+        ticker:
+          type: string
+          description: ticker do ativo
+          example: "BBAS3"
+        company:
+          type: string
+          description: O nome da empresa do ativo
+          example: "Banco do Brasil"
+    AssetsDTO:
+      type: object
+      properties:
+        asset:
+          $ref: "#/components/schemas/AssetDTO"
+        weight:
+          description: O peso do ativo na carteira, aqueles % que aparecem do lado do ativo
+          example: 5
+          type: integer
+          format: int32
+    SectorDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          description: O nome do setor do ativo
+          example: "Bancos"
+        baseName:
+          type: string
+          description: O nome na base de dados
+          example: "Banks"
+        sectorIndicador:
+          type: string
+          description: A abreviação do setor
+          example: "ACAO"
+    FiltersDTO:
+      type: object
+      properties:
+        categories:
+          type: array
+          description: Lista de categorias para consulta
+          example:
+            - "categoria1"
+            - "categoria2"
+    RequestOperationsDTO:
+      type: object
+      properties:
+        portfolioType:
+          type: string
+          description: Tipo de portifolio
+          example: "FII"
+        accountNumber:
+          type: string
+          description: Número da conta para consulta de operações
+          example: "003344556"
+        startDate:
+          type: string
+          description: Position start date
+          format: date
+          example: "2018-01-01"
+        endDate:
+          type: string
+          description: Position end date
+          format: date
+          example: "2018-01-30"
+    OperationResponseDTO:
+      type: object
+      title: Retorno da busca de Operações
+      properties:
+        accountNumber:
+          type: string
+          description: Número da conta informada
+          example: "003344556"
+        accountName:
+          type: string
+          description: Nome do titular da conta
+          example: "Maria José"
+        contracts:
+          type: array
+          description: Lista de contratações
+          $ref: "#/components/schemas/ContractsDTO"
+    ContractsDTO:
+      type: object
+      properties:
+        contractId:
+          type: integer
+          description: Identificador único do contrato
+          example: 1234
+        portfolioType:
+          type: string
+          description: Tipo do Portfólio
+          example: "10SIM"
+        effectiveDate:
+          type: string
+          description: Data da operação
+          example: "01/01/2001"
+        active:
+          type: boolean
+          description: Flag indicativa de ativação ou inativação
+          example: true
+        operations:
+          type: array
+          description: Lista de Operações
+          $ref: "#/components/schemas/OperationDTO"
+    OperationDTO:
+      type: object
+      properties:
+        portfolioOperationId:
+          type: integer
+          description: Identificador único do item do portfólio
+          example: 1190815
+        operationDateAt:
+          type: string
+          description: Data da operação
+          example: "03/12/2024"
+        operationOrigin:
+          type: string
+          description: Origem da operação
+          example: "REBALANCEAMENTO"
+        operationType:
+          type: string
+          description: Tipo da operação
+          example: "COMPRA"
+        operationsAssets:
+          type: array
+          description: Lista de ativos
+          $ref: "#/components/schemas/OperationAssetDTO"
+    OperationAssetDTO:
+      type: object
+      properties:
+        assetName:
+          type: string
+          description: Nome do ativo
+          example: "WEGE3"
+        assetQtd:
+          type: integer
+          description: Quantidade de ativos
+          example: 43
+        assetAveragePrice:
+          type: number
+          description: Preço por ativo
+          example: 54.62
+        operationBalance:
+          type: number
+          description: Valor total da operação
+          example: 2348.61

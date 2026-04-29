@@ -1,0 +1,4246 @@
+openapi: 3.0.2
+info:
+  title: API de busca de posição
+  version: 0.0.1
+  description: |
+    API para buscar dados relacionados a posição de uma conta.
+servers:
+  - url: https://api.btgpactual.com/iaas-api-position
+paths:
+  /api/v1/position/{account_number}:
+    get:
+      tags:
+        - get-position-by-account
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta para buscar resumo da posição.
+            
+            Example: `001234567`
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Position"
+          description: Successful response
+          headers:
+            x-id-pactual:
+              schema:
+                type: string
+                example: 2ffb9cfb-8dae-4956-b8d9-8d04ff5823ee
+              description: Identificador único da requisição
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message: "access_token: The Token has expired on Wed Jul 28 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não encontrado:
+                  value:
+                    timestamp: 2021-07-28T12:41:31.887+00:00
+                    status: 404
+                    error: Not Found
+                    message: ""
+                    path: /api/v1/operation/partner/positions3
+                Posição não encontrada:
+                  value:
+                    errors:
+                      - code: 404
+                        message: There is no position for partner with cnpj 10010
+          description:
+            "Não encontrado, caso url do enpoint seja inválida , ou nã\
+            o exista posição para a conta informada"
+        "400":
+          content:
+            application/json:
+              examples:
+                Erro de Validação:
+                  value:
+                    status: 400
+                    title: errors.validation
+                    meta:
+                      globalErrors:
+                        - code: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211 - request:idPartnerRequest:9659] is already been being processed"
+                          message: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211 - request:idPartnerRequest:9659] is already been being processed"
+          description: Requisição com erro de validação
+      operationId: getAccountPositions
+      summary: Busca de posições por conta.
+      description: |
+        Recupera em tempo real o resumo de investimento (PositionData) de uma conta
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 120 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: D0
+    post:
+      tags:
+        - post-position-by-account-and-date
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta para buscar resumo da posição.
+            
+            Example: `001234567`
+          schema:
+            type: string
+          in: path
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PositionDateRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PositionData"
+          description: Successful response
+          headers:
+            x-id-pactual:
+              schema:
+                type: string
+                example: 2ffb9cfb-8dae-4956-b8d9-8d04ff5823ee
+              description: Identificador único da requisição
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message: "access_token: The Token has expired on Wed Jul 28 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não encontrado:
+                  value:
+                    timestamp: 2021-07-28T12:41:31.887+00:00
+                    status: 404
+                    error: Not Found
+                    message: ""
+                    path: /api/v1/operation/partner/positions3
+                Posição não encontrada:
+                  value:
+                    errors:
+                      - code: 404
+                        message: There is no position for partner with cnpj 10010
+          description: "Não encontrado, caso url do enpoint seja inválida , ou não exista posição para a conta informada"
+        "400":
+          content:
+            application/json:
+              examples:
+                Erro de Validação:
+                  value:
+                    status: 400
+                    title: errors.validation
+                    meta:
+                      globalErrors:
+                        - code: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211 - request:idPartnerRequest:9659] is already been being processed"
+                          message: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211 - request:idPartnerRequest:9659] is already been being processed"
+          description: Requisição com erro de validação
+      operationId: postPositionsByAccountAndDate
+      summary: Busca de posições por conta e data.
+      description: |
+        Recupera em tempo real o resumo de investimento (PositionData) de uma conta na data informada.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 120 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+  /api/v1/position/unit-price/{account_number}:
+    post:
+      tags:
+        - post-position-unit-price-by-account
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta para buscar resumo da posição.
+            
+            Example: `001234567`
+          schema:
+            type: string
+          in: path
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PositionPURequest"
+      responses:
+        "202":
+          description: "Accepted"
+          headers:
+            x-id-pactual:
+              schema:
+                type: string
+                example: 2ffb9cfb-8dae-4956-b8d9-8d04ff5823ee
+              description: Identificador único da requisição
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message: "access_token: The Token has expired on Wed Jul 28 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não encontrado:
+                  value:
+                    timestamp: 2021-07-28T12:41:31.887+00:00
+                    status: 404
+                    error: Not Found
+                    message: ""
+                    path: /api/v1/position/unit-price/{accountNumber}
+          description: "Não encontrado, caso url do enpoint seja inválida"
+        "400":
+          content:
+            application/json:
+              examples:
+                Erro de Validação:
+                  value:
+                    status: 400
+                    title: errors.validation
+                    meta:
+                      globalErrors:
+                        - code: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211 - request:idPartnerRequest:9659] is already been being processed"
+                          message: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211 - request:idPartnerRequest:9659] is already been being processed"
+          description: Requisição com erro de validação
+      operationId: getFixedIncomeHistoryByAccountAndPeriod
+      summary: Busca de preço unitário (PU) por conta e período de renda fixa
+      description: |
+        Endpoint responsável pela busca por preço unitário por conta e período.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Posições por conta (positions-by-account)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: Qualquer período
+  /api/v1/position/unit-price/history/{account_number}:
+    get:
+      tags:
+        - get-position-history-unit-price-by-account
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta para buscar resumo da posição.
+            
+            Example: `001234567`
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        "202":
+          description: "Accepted"
+          headers:
+            x-id-pactual:
+              schema:
+                type: string
+                example: 2ffb9cfb-8dae-4956-b8d9-8d04ff5823ee
+              description: Identificador único da requisição
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message: "access_token: The Token has expired on Wed Jul 28 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não encontrado:
+                  value:
+                    timestamp: 2021-07-28T12:41:31.887+00:00
+                    status: 404
+                    error: Not Found
+                    message: ""
+                    path: /api/v1/position/unit-price/{accountNumber}
+          description: "Não encontrado, caso url do enpoint seja inválida"
+        "400":
+          content:
+            application/json:
+              examples:
+                Erro de Validação:
+                  value:
+                    status: 400
+                    title: errors.validation
+                    meta:
+                      globalErrors:
+                        - code: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211 - request:idPartnerRequest:9659] is already been being processed"
+                          message: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211 - request:idPartnerRequest:9659] is already been being processed"
+          description: Requisição com erro de validação
+      operationId: getFixedIncomeHistoryByAccount
+      summary: Busca histórica de preço unitário (PU) por conta de renda fixa.
+      description: |
+        Endpoint responsável pela busca de histórico de preço unitário por conta.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Posições por conta (positions-by-account)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: D0
+  /api/v1/position/partner:
+    get:
+      servers:
+        - url: https://api.btgpactual.com/iaas-api-position/
+          description: URL principal para acesso à API.
+      tags:
+        - get-partner-position
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PositionDownloadData"
+          description: Successful response
+          headers:
+            x-id-pactual:
+              schema:
+                type: string
+                example: 2ffb9cfb-8dae-4956-b8d9-8d04ff5823ee
+              description: Identificador único da requisição
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message: "access_token: The Token has expired on Wed Jul 28 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não encontrado:
+                  value:
+                    timestamp: 2021-07-28T12:41:31.887+00:00
+                    status: 404
+                    error: Not Found
+                    message: ""
+                    path: /api/v1/operation/partner/positions3
+                Posição não encontrada:
+                  value:
+                    errors:
+                      - code: 404
+                        message: There is no position file for partner with cnpj 10010
+          description:
+            "Não encontrado, caso url do enpoint seja inválida , ou nã\
+            o exista posição para o parceiro informado"
+        "400":
+          content:
+            application/json:
+              examples:
+                Erro de Validação:
+                  value:
+                    status: 400
+                    title: errors.validation
+                    meta:
+                      globalErrors:
+                        - code: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211 - request:idPartnerRequest:9659] is already been being processed"
+                          message: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211 - request:idPartnerRequest:9659] is already been being processed"
+          description: Requisição com erro de validação
+      operationId: getPartnerPositions
+      summary: Busca de posições por parceiro.
+      description: |
+        Recupera um objeto JSON (PositionDownloadData) que contém uma URL para download do arquivo no formato zip. 
+
+        Esse arquivo, por sua vez, possui o resumo da posição (PositionData) de todas as contas em **D0**.
+
+        **Não inclui contas de tipo Fundos, apenas contas tipo Investimento**
+
+        **Necessário realizar a chamada do endpoint get-position-by-partner-refresh para que este arquivo seja atualizado.**
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Necessário realizar a chamada do endpoint **get-position-by-partner-refresh** para que este arquivo seja atualizado.
+
+        Janela de dados: D0
+  /api/v2/position/unit-price/{accountNumber}:
+    post:
+      tags:
+        - post-position-unit-price-by-account-v2
+      summary: Busca de preço unitário (PU) por conta e período de renda fixa
+      description: |
+        Endpoint responsável pela busca do resumo de investimento de Renda Fixa de uma conta, por período.
+
+        A busca será disponibilizada em cache por doze horas (12 horas). 
+
+        Após expirar as 12 horas a consulta poderá ser executada novamente.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Posições por Conta V2 (positions-by-account-v2)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: A cada 12 horas
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: v2getFixedIncomeHistoryByAccountAndPeriod
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta para buscar resumo da posição.
+            
+            Example: `001234567`
+          schema:
+            type: string
+          in: path
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PositionPeriodFilter"
+        required: true
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v2/position/unit-price/history/{accountNumber}:
+    get:
+      tags:
+        - get-position-history-unit-price-by-account-v2
+      summary: Busca histórica de preço unitário (PU) por conta de renda fixa.
+      description: |
+        Endpoint responsável pela busca de histórico de preço unitário por conta.
+
+        A busca será disponibilizada em cache por uma semana (7 dias). 
+
+        Após expirar os 7 dias a consulta poderá ser executada novamente.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Posições por Conta V2 (positions-by-account-v2)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 1 a cada 30 minutos.
+
+        Frequência de atualização: Uma vez por semana
+
+        Janela de dados: D0
+
+      operationId: v2getFixedIncomeHistoryByAccount
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta para buscar resumo da posição.
+            
+            Example: `001234567`
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v2/position/unit-price/history/partner:
+    get:
+      tags:
+        - get-position-history-unit-price-by-partner-v2
+      summary: Busca do histórico completo de posições por parceiro.
+      description: |
+        Recupera em tempo real o resumo de investimento de Renda Fixa de todas as contas de um parceiro.
+
+        A busca será disponibilizada em cache por uma semana (7 dias). 
+
+        Após expirar os 7 dias a consulta poderá ser executada novamente.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Posições por Conta V2 (positions-by-account-v2)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Uma vez por semana
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: v2getFixedIncomeHistoryByPartner
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta para buscar resumo da posição.
+            
+            Example: `001234567`
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v2/position/unit-price/history/accounts:
+    post:
+      tags:
+        - get-position-history-unit-price-by-accounts-v2
+      summary: Busca do histórico completo de posições por uma lista de contas de um parceiro.
+      description: |
+        Recupera em tempo real o resumo de investimento de Renda Fixa de  uma lista de contas de um parceiro.
+
+        A busca será disponibilizada em cache por doze horas (12 horas). 
+
+        Após expirar as 12 horas a consulta poderá ser executada novamente.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Posições por Conta V2 (positions-by-account-v2)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: A cada 12 horas
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: v2getFixedIncomeHistoryByAccounts
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta para buscar resumo da posição.
+            
+            Example: `001234567`
+          schema:
+            type: string
+          in: path
+          required: true
+          example: eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FixedIncomeHistory"
+        required: true
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/position/refresh:
+    get:
+      tags:
+        - get-position-by-partner-refresh
+      summary: Geração de posições por parceiro enviado por meio de um webhook
+      description: |
+        Realiza a busca assincrona de um objeto JSON que contém uma URL para download do arquivo no formato zip.  
+
+        A busca será disponibilizada em cache por trinta minutos (30 minutos).
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Posições por Parceiro (positions-by-partner)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        **Obs: Está rota também atualizara as posições contidas no arquivo enviado na rota get-partner-position que deve ser utilizada caso queira o link do arquivo de forma síncrona.**
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Asíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: A cada 30 minutos
+
+        Janela de dados: N/A *(Não se Aplica)*
+
+      operationId: getWebhookPositionByPartner
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: "#/components/schemas/ErrorMetadata"
+    FixedIncomeHistory:
+      description: Lista de Contas
+      type: object
+      properties:
+        accounts:
+          type: array
+          example:
+            - "123456789"
+            - "000123456"
+            - "008765432"
+            - "999777666"
+          items:
+            $ref: "#/components/schemas/AccountsFilter"
+    AccountsFilter:
+      description: Conta para filtro
+      type: string
+      example: "001234567"
+    PositionPeriodFilter:
+      required:
+        - endDate
+        - startDate
+      type: object
+      properties:
+        startDate:
+          type: string
+          description: Position start date
+          format: date
+          example: "2018-01-01"
+        endDate:
+          type: string
+          description: Position end date
+          format: date
+          example: "2018-01-30"
+    PositionDateFilter:
+      required:
+        - date
+      type: object
+      properties:
+        date:
+          type: string
+          description: Position date
+          example: "2022-03-10"
+    PositionDateRequest:
+      description: Requisição para busca de posição de conta por data.
+      type: object
+      properties:
+        date:
+          description: Data da posição desejada na consulta.
+          type: string
+          example: "2021-07-29"
+    PositionDownloadData:
+      description: Dados para download do arquivo zip contendo o resumo de todas as posições vinculadas ao parceiro. Cada resumo de posição é reprensentado pelo PositionData.
+      type: object
+      properties:
+        url:
+          description: Url pré assinada para donwload arquivo no formato zip contendo o resumo de posição das contas vinculadas ao parceiro.
+          type: string
+          example: "https://invest-repors-prd.s3.amazonws.com/iaas-position-holder/12345678912/position-zip/20210727_123456_12345678912_position.zip?X-Amz-SecurityToken=IQoJb3pZsaduhadihsd%b#jaskdbsajkdbsadkajasdb-Amz-Algorithm=AWS4-HMAC-HAJH&AA%-Amz-Date=20210727T185114Z-Amz-SignedHeader=host&X-Amz-Expires=846400&X-Amz=8bea09896786786e7879f7987c22b324cedhge"
+        dateTime:
+          description: Data e hora da geração da url.
+          type: string
+          example: "2021-07-29T18:00:00Z"
+        numberOfAccounts:
+          description: Quantidade de contas contidas no arquivo zip.
+          type: integer
+          example: 1
+        fileSize:
+          format: int32
+          description: Tamanho do Arquivo em bytes
+          type: integer
+          example: 613
+    PositionPURequest:
+      description: Dados de filtro para a busca de histórico de preço unitário.
+      type: object
+      properties:
+        startDate:
+          description: Data início
+          type: string
+          example: "2022-01-01"
+        endDate:
+          description: Data fim
+          type: string
+          example: "2022-01-31"
+    PositionData:
+      description: dados da posição de cada conta contida no PositionDownloadData.
+      type: object
+      properties:
+        AccountNumber:
+          description: número da conta do cliente
+          type: string
+          example: "000123456"
+        PositionDate:
+          description: data da posição, mesmo que a data não seja o dia corrente, ela é sempre a posição mais atual
+          type: string
+          example: "2021-07-29"
+        Position:
+          $ref: "#/components/schemas/Position"
+          description: dados da posição
+          type: object
+    Position:
+      description: dados da posição
+      type: object
+      properties:
+        ContractVersion:
+          description: número da versão de contrato exibida
+          type: string
+          example: 1
+        AccountNumber:
+          description: número da conta do cliente
+          type: string
+          example: "000123456"
+        Agency:
+          description: número da agência de conta investimento
+          type: string
+          example: 1
+        PositionDate:
+          description: data da posição
+          type: string
+          example: "2021-07-29T18:51:13Z"
+        TotalAmount:
+          description: total em reais da conta do cliente, o valor pode ser negativo ou positivo. Esse valor, corresponde ao Patrimônio Total que pode ser visualizado pelo cliente no portal.
+          type: string
+          example: "-212.77"
+        SummaryAccounts:
+          description: resumo da posição do cliente de cada mercado que possui posição.
+          type: array
+          items:
+            $ref: "#/components/schemas/SummaryAccount"
+        InvestmentFund:
+          description: Fundos de investimento.
+          type: array
+          items:
+            $ref: "#/components/schemas/InvestmentFund"
+        FixedIncome:
+          description: Renda fixa.
+          type: array
+          items:
+            $ref: "#/components/schemas/FixedIncome"
+        InvestmentFundCotaCetipada:
+          description: Fundos de Investimento Externo.
+          type: array
+          items:
+            $ref: "#/components/schemas/InvestmentFundCotaCetipada"
+        Credits:
+          description: Crédito.
+          type: array
+          items:
+            $ref: "#/components/schemas/Credits"
+        PensionInformations:
+          description: Previdência.
+          type: array
+          items:
+            $ref: "#/components/schemas/PensionInformations"
+        Commodity:
+          description: Commodities.
+          type: array
+          items:
+            $ref: "#/components/schemas/Commodity"
+        Equities:
+          description: Renda Variável.
+          type: array
+          items:
+            $ref: "#/components/schemas/Equities"
+        Derivative:
+          description: Derivativos.
+          type: array
+          items:
+            $ref: "#/components/schemas/Derivative"
+        FixedIncomeStructuredNote:
+          description: COE.
+          type: array
+          items:
+            $ref: "#/components/schemas/FixedIncomeStructuredNote"
+        PayableReceivables:
+          description: Contas a pagar.
+          type: array
+          items:
+            $ref: "#/components/schemas/PayableReceivables"
+        PendingSettlements:
+          description: Valores em trânsito.
+          type: array
+          items:
+            $ref: "#/components/schemas/PendingSettlements"
+        CryptoCoins:
+          description: Valores de Crypto Ativos
+          type: array
+          items:
+            $ref: "#/components/schemas/CryptoCoins"
+        Cash:
+          description: Dinheiro.
+          type: array
+          items:
+            $ref: "#/components/schemas/Cash"
+        CashCollateralRoot:
+          description: Margem em dinheiro.
+          type: array
+          items:
+            $ref: "#/components/schemas/CashCollateralRoot"
+        Precatories:
+          description: Precatórios.
+          type: array
+          items:
+            $ref: "#/components/schemas/Precatories"
+        PrecatoriesCR:
+          description: Precatórios CR.
+          type: array
+          items:
+            $ref: "#/components/schemas/PrecatoriesCR"
+    SummaryAccount:
+      description: resumo da posição do cliente de cada mercado.
+      type: object
+      properties:
+        MarketName:
+          description: nome do mercado
+          type: string
+          example: "Conta Corrente"
+          enum:
+            [
+              Conta Corrente,
+              Fundos de Investimento,
+              Margem em Dinheiro,
+              Renda Fixa,
+              Nota Estruturada,
+              Previdência,
+              Valores em Trânsito,
+              Renda Variável,
+              Derivativos,
+              Crédito,
+              Derivativos - Futuros,
+              Commodities,
+            ]
+        MarketAbbreviation:
+          description: abreviação do nome do mercado
+          type: string
+          example: "CC"
+          enum: [CC, FN, CM, RF, COE, PREV, VT, RV, DRV, CR, DRV_Fut, co]
+        PositionDate:
+          description: data da posição do mercado, essa data pode ser anterior à PositionDate do objeto raiz.
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        EndPositionValue:
+          description: valor em reais da posição no final do dia da data mencionada em PositionDate do nó SummaryAccounts. Podendo ser positivo ou negativo.
+          type: string
+          example: "81244.8"
+        StartPositionValue:
+          description: valor em reais da posição no início do dia da data mencionada em PositionDate do nó SummaryAccounts. Podendo ser positivo ou negativo.
+          type: string
+          example: "0.1"
+    InvestmentFund:
+      description: Fundos de investimentos internos
+      type: object
+      properties:
+        ShareValue:
+          description: Valor da cota.
+          type: string
+          example: "0.1"
+        Fund:
+          description: Fundo
+          type: object
+          properties:
+            FundName:
+              description: Nome do fundo.
+              type: string
+              example: "SPX NIMITZ FIC FI MULT ACCESS D"
+            SecurityCode:
+              description: Código do ativo.
+              type: string
+              example: "1573210"
+            FundCGECode:
+              description: Código CGE do fundo.
+              type: string
+              example: "518389"
+            FundCNPJCode:
+              description: CNPJ do fundo.
+              type: string
+              example: "29127763000180"
+            DatePortfolio:
+              description: Data do valor da cota.
+              type: string
+              example: "2021-02-17T00:00:00"
+            ManagerName:
+              description: Gestor do fundo.
+              type: string
+              example: "PACTUAL WM GESTAO DE RECURSOS LTDA"
+            ManagerCGECode:
+              description: código do gestor do fundo.
+              type: string
+              example: "323232"
+            FundLiquidity:
+              description: Liquidez do fundo.
+              type: string
+              example: "61"
+            BenchMark:
+              description: marca referência
+              type: string
+              example: "CDI"
+            EsTipoPortfolio:
+              description: Tipo de portfólio.
+              type: string
+              example: "20"
+            TipoCvm:
+              description: Tipo de CVM
+              type: string
+              example: "4"
+            EntityType:
+              description: Tipo de entidade (C ou 4)
+              type: string
+              example: "C"
+            RelatedSecurityCodeClass:
+              description: código de segurança relacionado à classe.
+              type: string
+              example: "354689"
+            RelatedSecurityCodeFund:
+              description: código de segurança relacionado ao fundo.
+              type: string
+              example: "354689"
+            RelatedClassCGECode:
+              description: código(CGE) relacionado à classe.
+              type: string
+              example: "354689"
+            RelatedFundCGECode:
+              description: código(CGE) relacionado ao fundo.
+              type: string
+              example: "354689"
+        Acquisition:
+          description: Aquisição.
+          type: array
+          items:
+            $ref: "#/components/schemas/Acquisition"
+        CotaCetipadaFundoExterno:
+          description: flag indicando se cota é de fundo externo.
+          type: string
+          example: "false"
+        PositionDate:
+          description: Data da posição do fundo.
+          type: string
+          example: "2024-01-12T00:00:00Z"
+        ProcessingDateTime:
+          description: Data-hora de processamento.
+          type: string
+          example: "2024-01-15T14:06:42.606Z"
+    Acquisition:
+      description: Aquisições
+      type: object
+      properties:
+        CostPrice:
+          description: Preço de compra.
+          type: string
+          example: "0.1"
+        IncomeTax:
+          description: Imposto de renda.
+          type: string
+          example: "0.1"
+        VirtualIOF:
+          description: IOF.
+          type: string
+          example: "0.1"
+        NetAssetValue:
+          description: Saldo liquido.
+          type: string
+          example: "0.1"
+        GrossAssetValue:
+          description: Saldo bruto.
+          type: string
+          example: "0.1"
+        AcquisitionDate:
+          description: Data da aquisição.
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        NumberOfShares:
+          description: Quantidade de cotas.
+          type: string
+          example: "0.1"
+        AcquisitionNumber:
+          description: Número da aquisição.
+          type: string
+          example: "1"
+        OrigemAmortizacao:
+          description: Flag indicando se é de origem amortização.
+          type: string
+          example: "false"
+        CostValue:
+          description: Valor de compra. Produto de NumberOfShare com CostPrice.
+          type: string
+          example: "0.1"
+        CotaCetipada:
+          description: Flag indicando se é cota cetipada.
+          type: string
+          example: "false"
+    FixedIncome:
+      description: Renda fixa.
+      type: object
+      properties:
+        AccountingGroupCode:
+          description: Código do agrupamento de contas.
+          type: string
+          example: "TESOURO DIRETO - NTNB-P"
+        Issuer:
+          description: Emissor da renda fixa.
+          type: string
+          example: "BANCO BTG PACTUAL S A"
+        IssueDate:
+          description: data de emissão da renda fixa.
+          type: string
+          example: "2023-08-22T00:00:00-03:00"
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "715270"
+        IssuerCGECode:
+          description: Código interno (CGE) do Emissor
+          type: string
+          example: "354689"
+        PriceType:
+          description: tipo de precificação
+          type: string
+          example: "2020"
+        ValueType:
+          description: valor do tipo de precificação
+          type: string
+          example: "Boleta (Cliente)"
+        Yield:
+          description: rendimento de renda fixa
+          type: string
+          example: "0.0"
+        Ticker:
+          description: Símbolo do ativo
+          type: string
+          example: "NTNB-P"
+        ReferenceIndexName:
+          description: Indíce de referência
+          type: string
+          example: "IPCA"
+        ReferenceIndexValue:
+          description: Valor do indíce de referência
+          type: string
+          example: "100% IPCA"
+        IndexYieldRate:
+          description: Taxa de rendimento do índice
+          type: string
+          example: "102,50% do CDI"
+        MaturityDate:
+          description: Data de vencimento
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        Quantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        Price:
+          description: Preço
+          type: string
+          example: "0.1"
+        GrossValue:
+          description: Valor bruto
+          type: string
+          example: "0.1"
+        IncomeTax:
+          description: Imposto de renda
+          type: string
+          example: "0.1"
+        IOFTax:
+          description: IOF
+          type: string
+          example: "0.1"
+        NetValue:
+          description: Valor líquido
+          type: string
+          example: "0.1"
+        IsLiquidity:
+          description: Indicador se o ativo está em período de liquidez diária
+          type: string
+          example: "false"
+        Acquisitions:
+          description: Aquisições
+          type: array
+          items:
+            $ref: "#/components/schemas/Acquisitions"
+        FTSId:
+          description: Identificador do FTS.
+          type: string
+          example: "12345678"
+        IsRepo:
+          description: Flag indicando se é repo.
+          type: string
+          example: "false"
+        CetipCode:
+          description: código Cetip.
+          type: string
+          example: "CDB123AZ"
+        SelicCode:
+          description: Código Selic.
+          type: string
+          example: "354689"
+        ISIN:
+          description: Número de Identificação de Valores Mobiliários Internacionais
+          type: string
+          example: "ABCDEFGHI001"
+        TaxFree:
+          description: flag indicando se é livre de taxas.
+          type: string
+          example: "false"
+        IssuerType:
+          description: tipo de emissor
+          type: string
+          example: "Titulo Privado"
+        Projection:
+          description: Projeção.
+          type: string
+        Lag:
+          description: Atraso
+          type: string
+        Default:
+          description: flag indicando se é padrão.
+          type: string
+          example: "false"
+        YieldAvg:
+          description: Rendimento médio.
+          type: string
+          example: "0.1"
+        DebtEarlyTerminationSchedules:
+          description: Número de Identificação de Valores Mobiliários Internacionais
+          type: array
+          items:
+            $ref: "#/components/schemas/DebtEarlyTerminationSchedules"
+    Acquisitions:
+      description: Aquisições
+      type: object
+      properties:
+        AcquisitionQuantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "3749919"
+        YieldToMaturity:
+          description: Taxa da compra em %
+          type: string
+          example: "0.1"
+        AcquisitionDate:
+          description: Data da compra
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        CostPrice:
+          description: Preço de compra
+          type: string
+          example: "0.1"
+        InitialInvestmentValue:
+          description: Valor inicial de investimento
+          type: string
+          example: "0.1"
+        InitialInvestmentQuantity:
+          description: Quantidade inicial de investimento
+          type: string
+          example: "0.1"
+        NetValue:
+          description: Valor liquido
+          type: string
+          example: "0.1"
+        GrossValue:
+          description: Valor de compra
+          type: string
+          example: "0.1"
+        IncomeTax:
+          description: Imposto de renda
+          type: string
+          example: "0.1"
+        IOFTax:
+          description: IOF
+          type: string
+          example: "0.1"
+        Yield:
+          description: Rendimento
+          type: string
+          example: "102.5"
+        ComplementYield:
+          description: Rendimento complementar
+          type: string
+          example: 0.0
+        IndexYieldRate:
+          description: Taxa
+          type: string
+          example: "104,00% do CDI + 104,00%"
+        TransferId:
+          description: Id de Transferência.
+          type: string
+          example: "104232791"
+        FTSId:
+          description: Identificador do FTS.
+          type: string
+          example: "12345678"
+        InterfaceDate:
+          description: Data da interface
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        PriceIncomeTax:
+          description: Preço da alíquota de imposto de renda
+          type: string
+          example: "0.1"
+        PriceVirtualIOF:
+          description: Preço da alíquota de IOF
+          type: string
+          example: "0.1"
+        DateTimeUpdate:
+          description: data-hora da atualização.
+          type: string
+          example: "2024-01-12T04:46:48"
+        PriceType:
+          description: tipo de precificação.
+          type: string
+          example: "200"
+        Price:
+          description: preço do ativo de renda fixa.
+          type: string
+          example: "0.1"
+        Prices:
+          description: Lista de preço do ativo de renda fixa.
+          type: array
+          items:
+            $ref: "#/components/schemas/Prices"
+        IsVirtual:
+          description: Flag indicando se é virtual
+          type: string
+          example: "false"
+    Prices:
+      description: Preços
+      type: array
+      properties:
+        PriceType:
+          description: Tipo de preço
+          type: string
+          example: "0.1"
+        Price:
+          description: Preço
+          type: string
+          example: "0.1"
+        IncomeTax:
+          description: Imposto de renda
+          type: string
+          example: "0.1"
+        IOFTax:
+          description: IOF
+          type: string
+          example: "0.1"
+    Credits:
+      description: Informações de Crédito
+      type: object
+      properties:
+        ACCACEs:
+          description: ACCACEs
+          type: array
+          items:
+            $ref: "#/components/schemas/ACCACE"
+        Loan:
+          description: Empréstimo
+          type: array
+          items:
+            $ref: "#/components/schemas/Loan"
+        Commitments:
+          description: Compromissos
+          type: array
+          items:
+            $ref: "#/components/schemas/Commitments"
+        RealEstate:
+          description: Imóveis
+          type: array
+          items:
+            $ref: "#/components/schemas/RealEstate"
+        Receivables:
+          description: Recebíveis
+          type: array
+          items:
+            $ref: "#/components/schemas/Receivables"
+        SBCLC:
+          description: SBCLC
+          type: array
+          items:
+            $ref: "#/components/schemas/SBCLC"
+        ACCs:
+          description: ACCs
+          type: array
+          items:
+            $ref: "#/components/schemas/ACCs"
+    ACCACE:
+      description: ACCACE
+      type: object
+      properties:
+        campo:
+          description:
+          type: string
+          example:
+    Commitments:
+      description: Compromissos
+      type: object
+      properties:
+        OperationCode:
+          description: Código de operação
+          type: string
+          example: 01AB02CD03DE
+        ContractCode:
+          description: Código do contrato
+          type: string
+          example: CCB30/21
+        Currency:
+          description: Moeda
+          type: string
+          example: BRL
+        PositionDate:
+          description: Data da posição
+          type: string
+          example: "2021-07-28T00:00:00"
+        interfaceDate:
+          description: Data da transação
+          type: string
+          example: "2021-07-28T00:00:00"
+        amount:
+          description: Valor
+          type: string
+          example: "0.1"
+        notionalValue:
+          description: Valor nocional
+          type: string
+          example: "0.1"
+        inceptionDate:
+          description: Data de início
+          type: string
+          example: "2021-07-28T00:00:00"
+        maturityDate:
+          description: Data de vencimento
+          type: string
+          example: "2021-07-28T00:00:00"
+        interestRate:
+          description: Taxa de juros
+          type: string
+          example: "0.1"
+        valuesPerCurrency:
+          description: Valores por moeda
+          type: array
+          items:
+            $ref: "#/components/schemas/ValuesPerCurrency"
+    ValuesPerCurrency:
+      description: Valores por moeda
+      type: object
+      properties:
+        currency:
+          description: Moeda
+          type: string
+          example: BRL
+        amount:
+          description: Valor
+          type: string
+          example: "0.1"
+        notionalValue:
+          description: Valor nocional
+          type: string
+          example: "0.1"
+    RealEstate:
+      description: Imóveis
+      type: object
+      properties:
+        campo:
+          description:
+          type: string
+          example:
+    Receivables:
+      description: Recebíveis
+      type: object
+      properties:
+        campo:
+          description:
+          type: string
+          example:
+    SBCLC:
+      description: SBCLC
+      type: object
+      properties:
+        accountCgeCode:
+          description: Código CGE da conta
+          type: string
+          example: "ACC123"
+        accountCgeDescription:
+          description: Descrição do CGE da conta
+          type: string
+          example: "Descrição do CGE da conta"
+        operationCode:
+          description: Código da operação
+          type: string
+          example: "01AB02CD03DE"
+        contractCode:
+          description: Código do contrato
+          type: string
+          example: "CCB30/21"
+        currency:
+          description: Moeda
+          type: string
+          example: BRL
+        inceptionDate:
+          description: Data de início
+          type: string
+          example: "2021-07-28T00:00:00"
+        maturityDate:
+          description: Data de vencimento
+          type: string
+          example: "2021-07-28T00:00:00"
+        DealPrice:
+          description: Preço da oferta
+          type: string
+          example: 0.1
+        blocked:
+          description: Valor bloqueado
+          type: string
+          example: 0.1
+        Description:
+          description: Descrição
+          type: string
+          example: "Descrição do contrato"
+        feesPay:
+          description: Taxas pagas
+          type: string
+          example: 0.1
+        TotalValue:
+          description: Valor total
+          type: string
+          example: 0.1
+        PositionDate:
+          description: Data da posição
+          type: string
+          example: "2021-07-28T00:00:00"
+        InterfaceDate:
+          description: Data da transação
+          type: string
+          example: "2021-07-28T00:00:00"
+        IofTax:
+          description: Imposto sobre Operações Financeiras
+          type: string
+          example: 0.1
+        interest:
+          description: Juros
+          type: string
+          example: 0.1
+        amount:
+          description: Valor
+          type: string
+          example: 0.1
+        disbursedAmount:
+          description: Valor desembolsado
+          type: string
+          example: 0.1
+        ValuesPerCurrency:
+          description: Valores por moeda
+          type: array
+          items:
+            $ref: "#/components/schemas/ValuesPerCurrencySBCLC"
+    ValuesPerCurrencySBCLC:
+      description: Valores por moeda
+      type: object
+      properties:
+        currency:
+          description: Moeda
+          type: string
+          example: BRL
+        amount:
+          description: Valor
+          type: string
+          example: 0.1
+        dealPrice:
+          description: Preço da oferta
+          type: string
+          example: 0.1
+        disbursedAmount:
+          description: Valor desembolsado
+          type: string
+          example: 0.1
+        interest:
+          description: Juros
+          type: string
+          example: 0.1
+        iofTax:
+          description: Imposto sobre Operações Financeiras
+          type: string
+          example: 0.1
+        totalValue:
+          description: Valor total
+          type: string
+          example: 0.1
+    ACCs:
+      description: ACCs
+      type: object
+      properties:
+        operationCode:
+          description: Código de operação
+          type: string
+          example: "01AB02CD03DE"
+        Accrual:
+          description: Apropriação
+          type: string
+          example: "0.1"
+        actualAmount:
+          description: Saldo
+          type: string
+          example: "0.1"
+        AnnualInterestRate:
+          description: Taxa anual
+          type: string
+          example: "0.1"
+        Basis:
+          description: Base
+          type: string
+          example: "0.1"
+        ContractCode:
+          description: Código do contrato
+          type: string
+          example: "CCB30/21"
+        Currency:
+          description: Moeda
+          type: string
+          example: BRL
+        PositionDate:
+          description: Data da posição
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        InterfaceDate:
+          description: Data da transação
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        InceptionDate:
+          description: Data de início
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        MaturityDate:
+          description: Data de vencimento
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        PercentIndex:
+          description: Taxa do índice
+          type: string
+          example: "0.1"
+        PrincipalAmount:
+          description: Principal
+          type: string
+          example: "0.1"
+        ReferenceIndexValue:
+          description: Valor do índice de referência
+          type: string
+          example: "100% IPCA"
+        TypeOfCredit:
+          description: Tipo de crédito
+          type: string
+          example: "1"
+        ValuesPerCurrency:
+          description: Valores por moeda
+          type: array
+          items:
+            $ref: "#/components/schemas/ValuesPerCurrencyACC"
+    ValuesPerCurrencyACC:
+      description: Valores por moeda
+      type: object
+      properties:
+        ActualAmount:
+          description: Saldo
+          type: string
+          example: "0.1"
+        Currency:
+          description: Moeda
+          type: string
+          example: BRL
+        PrincipalAmount:
+          description: Principal
+          type: string
+          example: "0.1"
+    Loan:
+      description: Empréstimo
+      type: object
+      properties:
+        ContractCode:
+          description: Contrato
+          type: string
+          example: "CCB30/21"
+        InceptionDate:
+          description: Data de início
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        MaturityDate:
+          description: Data de vencimento
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        DealAmount:
+          description: Valor de negócio
+          type: string
+          example: "0.1"
+        LoanType:
+          description: Modalidade
+          type: string
+          example: "1"
+        TypeOfCredit:
+          description: Tipo de crédito
+          type: string
+          example: "1"
+        PercentIndex:
+          description: Taxa do índice
+          type: string
+          example: "0.1"
+        PrincipalAmount:
+          description: Principal
+          type: string
+          example: "0.1"
+        ActualAmount:
+          description: Saldo
+          type: string
+          example: "0.1"
+        Accrual:
+          description: Apropriação
+          type: string
+          example: "0.1"
+        AnnualInterestRate:
+          description: Taxa anual
+          type: string
+          example: "0.1"
+        Basis:
+          description: Base
+          type: string
+          example: "0.1"
+        PositionDate:
+          description: Data da posição
+          type: string
+          example: "2021-07-28T21:52:23Z"
+    PensionInformations:
+      description: Previdência
+      type: object
+      properties:
+        FundType:
+          description: Tipo
+          type: string
+          example: "PGBL"
+        CertificateName:
+          description: Certificado
+          type: string
+          example: "6986"
+        StartDate:
+          description: Data início
+          type: string
+          example: "2021-07-28T21:52:00"
+        FirstContributionDate:
+          description: Data da primeira contribuição
+          type: string
+          example: "2021-07-28T00:00:00"
+        CertificateStatus:
+          description: Situação do certificado
+          type: string
+          example: "Ativa Com Cobrança Ativa"
+        TaxRegime:
+          description: Regime tributário
+          type: string
+          example: "REGRESSIVO"
+        IncomeType:
+          description: Tipo de renda
+          type: string
+          example: "Renda Mensal por Prazo Certo"
+        Recipient:
+          description: Beneficiário
+          type: string
+          example: "João da Silva"
+        SusepCode:
+          description: Código susep
+          type: string
+          example: "15414.901924/2014-44"
+        CorporateCNPJ:
+          description: CNPJ corporativo
+          type: string
+          example: "18041877000196"
+        CorporateName:
+          description: Nome corporativo
+          type: string
+          example: "BTG PACTUAL"
+        GrossValue:
+          description: Valor bruto
+          type: string
+          example: "0.1"
+        NetValue:
+          description: Valor líquido
+          type: string
+          example: "0.1"
+        CostPrice:
+          description: Preço de compra
+          type: string
+          example: "0.1"
+        Positions:
+          description: Posições
+          type: array
+          items:
+            $ref: "#/components/schemas/Positions"
+        IsExternalPension:
+          description: Indicador para previdência externa
+          type: string
+          example: "true"
+        ExternalPension:
+          description: Nome da previdência externa
+          type: string
+          example: "ICATU"
+        PositionDate:
+          description: Data da posição
+          type: string
+          example: "2021-07-28T00:00:00"
+        ContractType:
+          description: Tipo de contrato
+          type: string
+          example: "Contribuição Programada"
+    Positions:
+      description: Posições de previdência
+      type: object
+      properties:
+        FundCGECode:
+          description: Código CGE do fundo
+          type: string
+          example: "383404"
+        FundCode:
+          description: Código do fundo
+          type: string
+          example: ""
+        FundName:
+          description: Nome do fundo
+          type: string
+          example: "BTG PACTUAL PREVIDENCIA IMA-B FIC FI RF"
+        ShareValue:
+          description: Valor da cota
+          type: string
+          example: "0.1"
+        NumberOfShares:
+          description: Número de cotas
+          type: string
+          example: "0.1"
+        GrossAssetValue:
+          description: Valor bruto
+          type: string
+          example: "0.1"
+        NetAssetValue:
+          description: Valor líquido
+          type: string
+          example: "0.1"
+        AssetCostPrice:
+          description: Preço de compra
+          type: string
+          example: "0.1"
+        Type:
+          description: Tipo
+          type: string
+          example: "Fundo de Pensão"
+        FundType:
+          description: Tipo de Fundo
+          type: string
+          example:
+        IncomeType:
+          description: Tipo
+          type: string
+          example: "Renda Mensal por Prazo Certo"
+        IndividualGrossAssetValue:
+          description: Saldo individual bruto
+          type: string
+          example: "0.1"
+        IndividualNumberOfShares:
+          description: Número individual de cotas
+          type: string
+          example: "0.1"
+        IndividualPreviousNetAssetValue:
+          description: Valor patrimonial líquido anterior
+          type: string
+          example: "0.1"
+        IndividualShareValue:
+          description: Valor da cota individual
+          type: string
+          example: "0.1"
+        SusepCode:
+          description: Código susep
+          type: string
+          example:
+        TaxRegime:
+          description: Regime Fiscal
+          type: string
+          example: "0.1"
+        CertificateName:
+          description: Nome do certificado
+          type: string
+          example: "Certificado"
+        CertificateStatus:
+          description: Status do certificado
+          type: string
+          example: ""
+        InitialDate:
+          description: Data inicial
+          type: string
+          example: "2023-10-06T00:00:00"
+        ChangeSincePreviousMonth:
+          description: Variação desde o mês anterior
+          type: string
+          example: ""
+        IsExternalPension:
+          description:
+          type: string
+          example:
+        ExternalPension:
+          description:
+          type: string
+          example:
+        PensionCnpjCode:
+          description: CNPJ do fundo
+          type: string
+          example: "96875632000320"
+        PositionDate:
+          description: Data da posição
+          type: string
+          example: "2023-10-06T00:00:00"
+        PerformanceMonthly:
+          description: Desempenho mensal
+          type: string
+          example: "0.1"
+        PerformanceYearly:
+          description: Desempenho anual
+          type: string
+          example: "0.1"
+        Performance12Months:
+          description: Desempenho 12 meses
+          type: string
+          example: "0.1"
+        SecurityCode:
+          description: Código de segurança
+          type: string
+          example: "12234567"
+        IrAliquots:
+          description: Alíquota IR
+          type: object
+          items:
+            $ref: "#/components/schemas/IrAliquots"
+    IrAliquots:
+      description: Alíquota IR
+      type: object
+      properties:
+        Aliquot:
+          description: Alíquota
+          type: string
+          example: "0.1"
+        IR:
+          description: Imposto de Renda
+          type: string
+          example: "0.1"
+    Commodity:
+      description: Comódite, mercadoria, matérias-prima
+      type: object
+      properties:
+        MarketPrice:
+          description: Preço de mercado
+          type: string
+          example: "0.1"
+        MarketValue:
+          description: Valor de mercado
+          type: string
+          example: "0.1"
+        Quantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "715270"
+        Ticker:
+          description: Símbolo do ativo
+          type: string
+          example: "OZ1"
+    Equities:
+      description: Renda Variável
+      type: object
+      properties:
+        ForwardPositions:
+          description: Termos
+          type: array
+          items:
+            $ref: "#/components/schemas/ForwardPositions"
+        OptionPositions:
+          description: Opções
+          type: array
+          items:
+            $ref: "#/components/schemas/OptionPositions"
+        StockLendingPositions:
+          description: Aluguel de ações
+          type: array
+          items:
+            $ref: "#/components/schemas/StockLendingPositions"
+        StockPositions:
+          description: Ações
+          type: array
+          items:
+            $ref: "#/components/schemas/StockPositions"
+        CollateralPositions:
+          description: Ativos em garantia
+          type: array
+          items:
+            $ref: "#/components/schemas/CollateralPositions"
+        StructuredProducts:
+          description: Produtos Estruturados
+          type: array
+          items:
+            $ref: "#/components/schemas/StructuredProducts"
+        CetipOptionPosition:
+          description: Posição de Opção Cetip
+          type: array
+          items:
+            $ref: "#/components/schemas/CetipOptionPosition"
+        PortfolioInvestments:
+          description: Investimentos em carteira
+          type: array
+          items:
+            $ref: "#/components/schemas/PortfolioInvestments"
+    ForwardPositions:
+      description: Termo
+      type: object
+      properties:
+        Ticker:
+          description: Símbolo do ativo
+          type: string
+          example: "OIBR3"
+        Description:
+          description: Descrição do ativo
+          type: string
+          example: "OI          ON      N1"
+        Quantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        PLPrice:
+          description: Resultado
+          type: string
+          example: "0.1"
+        MarketValue:
+          description: Valor de mercado
+          type: string
+          example: "0.1"
+        CostGrossPrice:
+          description: Preço de compra
+          type: string
+          example: "0.1"
+        MaturityDate:
+          description: Data de vencimento
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        CostNetPrice:
+          description: Preço de compra líquido
+          type: string
+          example: "0.1"
+        SecurityCode:
+          description: O código do ativo
+          type: string
+          example: "123456"
+        StrikePrice:
+          description: Preço de exercício
+          type: string
+          example: "0.1"
+        QuantityPendingSettlement:
+          description: Quantidade pendente de liquidação
+          type: string
+          example: "0.1"
+        ReferenceAsset:
+          description: Ativo de referência
+          type: object
+          properties:
+            SecurityCode:
+              description: Código interno do termo
+              type: string
+              example: "123456"
+            Ticker:
+              description: Símbolo do ativo
+              type: string
+              example: "ABCDE6"
+        InterfaceDate:
+          description: Data da posição do termo
+          type: string
+          example: "2024-01-12T00:00:00Z"
+    OptionPositions:
+      description: Opções
+      type: object
+      properties:
+        Ticker:
+          description: Código da opção
+          type: string
+          example: "DOLFX21"
+        BuySell:
+          description: Compra ou Venda
+          type: string
+          example: "Compra"
+        PremiumValue:
+          description: Valor do prêmio
+          type: string
+          example: "0.1"
+        MarketPremium:
+          description: Prêmio de mercado
+          type: string
+          example: "0.1"
+        PrevClose:
+          description: Fechamento anterior
+          type: string
+          example: "0.1"
+        Quantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        TotalValue:
+          description: Valor total
+          type: string
+          example: "0.1"
+        StrikePrice:
+          description: Preço de exercício
+          type: string
+          example: "0.1"
+        MaturityDate:
+          description: Data de exercício
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        OptionType:
+          description: Tipo de opção
+          type: string
+          example: "Call"
+        Description:
+          description: Posição
+          type: string
+          example: "Comprada"
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "715270"
+        QuantityPendingSettlement:
+          description: Quantidade pendente de liquidação
+          type: string
+          example: "0.1"
+        TickerInfo:
+          description: Informações adicionais da opção
+          type: object
+          properties:
+            LastTradePrice:
+              description: Último preço de negociação
+              type: string
+              example: "1.0"
+            ChangePercent:
+              description: Porcentagem de alteração
+              type: string
+              example: "10.0"
+            LastTradeTime:
+              description: Data-hora da última atualização
+              type: string
+              example: "2024-02-16T00:00:00Z"
+        ReferenceAsset:
+          description: Ativo de referência.
+          type: object
+          properties:
+            SecurityCode:
+              description: Código interno do ativo referência.
+              type: string
+              example: "407462"
+            Ticker:
+              description: Ticker de referência.
+              type: string
+              example: "MGLU3"
+        InterfaceDate:
+          description: Data da posição da opção.
+          type: string
+          example: "2024-01-12T00:00:00Z"
+        AveragePrice:
+          description: Preço médio da opção.
+          type: object
+          properties:
+            Price:
+              description: Preço da opção.
+              type: string
+              example: "0.1"
+            Adjustable:
+              description: Flag que indica se o preço médio pode ser ajustado.
+              type: string
+              example: "false"
+            Proceeds:
+              description: Receitas
+              type: string
+              example: "0.1"
+            AccumulatedProceeds:
+              description: Receitas acumuladas
+              type: string
+              example: "0.1"
+            TotalProceeds:
+              description: Receitas totais
+              type: string
+              example: "0.1"
+    StockLendingPositions:
+      description: Posições de empréstimo de ações
+      type: object
+      properties:
+        Ticker:
+          description: Símbolo da ação
+          type: string
+          example: "GETT11"
+        LendingType:
+          description: Posição
+          type: string
+          example: "Tomador"
+        Quantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        MarketPrice:
+          description: Preço de referência
+          type: string
+          example: "0.1"
+        TotalValue:
+          description: Resultado líquido
+          type: string
+          example: "0.1"
+        GrossAccruedValue:
+          description: Valor acumulado bruto
+          type: string
+          example: "0.1"
+        TransactionDate:
+          description: Data da operação
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        RatePorcent:
+          description: Taxa ano em %
+          type: string
+          example: "0.1"
+        LenderRebate:
+          description: Valor de repasse
+          type: string
+          example: "0.1"
+        MarketValue:
+          description: Valor de mercado
+          type: string
+          example: "0.1"
+        MaturityDate:
+          description: Data de vencimento
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        IRTax:
+          description: Imposto de renda
+          type: string
+          example: "0.1"
+        SecurityCode:
+          description: Código interno do ativo de aluguél de ações.
+          type: string
+          example: "1253"
+        CdOperationType:
+          description: Tipo de operação de CD.
+          type: string
+        ReferenceAsset:
+          description: Ativo de referência.
+          type: object
+          properties:
+            SecurityCode:
+              description: Código interno do ativo referência.
+              type: string
+              example: "407462"
+            Ticker:
+              description: Ticker de referência.
+              type: string
+              example: "MGLU3"
+        InterfaceDate:
+          description: Data da posição do Aluguél de ações.
+          type: string
+          example: "2024-01-12T00:00:00Z"
+    StockPositions:
+      description: Ações
+      type: object
+      properties:
+        Ticker:
+          description: Código da ação
+          type: string
+          example: "PRIO3"
+        Description:
+          description: Descrição da ação
+          type: string
+          example: "BRASIL ON NM"
+        Quantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        MarketPrice:
+          description: Preço de mercado
+          type: string
+          example: "0.1"
+        PrevClose:
+          description: Fechamento anterior
+          type: string
+          example: "0.1"
+        GrossValue:
+          description: Valor bruto
+          type: string
+          example: "0.1"
+        CostPrice:
+          description: Preço de custo
+          type: string
+          example: "0.1"
+        ISINCode:
+          description: Código universal para Identificação de Valores Mobiliários Internacionais
+          type: string
+          example: "ABCDEFGHI001"
+        IncomeTax:
+          description: Imposto de Renda
+          type: string
+          example: "0.1"
+        InitialInvestimentValue:
+          description: Valor de investimento inicial.
+          type: string
+          example: "0.1"
+        Issuer:
+          description: Emissor da renda fixa.
+          type: string
+          example: "BANCO BTG PACTUAL S A"
+        SectorCode:
+          description: Código do setor
+          type: string
+          example: "17"
+        SectorDescription:
+          description: Descrição do setor
+          type: string
+          example: "EXPLORAÇÃO E/OU REFINO"
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "1105783"
+        QuantityPendingSettlement:
+          description: Quantidade Pendente de Liquidação
+          type: string
+          example: "0.1"
+        IsFII:
+          description: Flag indicadora se é FII
+          type: string
+          example: "false"
+        TickerInfo:
+          description: Informações adicionais da ação
+          type: object
+          properties:
+            LastTradePrice:
+              description: Último preço de negociação
+              type: string
+              example: "1.0"
+            ChangePercent:
+              description: Porcentagem de alteração
+              type: string
+              example: "10.0"
+            LastTradeTime:
+              description: Data-hora da última atualização
+              type: string
+              example: "2024-02-16T00:00:00Z"
+        AveragePrice:
+          type: object
+          properties:
+            Price:
+              description: Preço
+              type: string
+              example: "0.1"
+            Adjustable:
+              description: Flag que indica se o preço médio pode ser ajustado
+              type: string
+              example: "false"
+            Proceeds:
+              description: Receitas
+              type: string
+              example: "0.1"
+            AccumulatedProceeds:
+              description: Receitas acumuladas
+              type: string
+              example: "0.1"
+            TotalProceeds:
+              description: Receitas totais
+              type: string
+              example: "0.1"
+        ReferenceAsset:
+          description: Ativo de referência.
+          type: object
+          properties:
+            SecurityCode:
+              description: Código interno do ativo referência.
+              type: string
+              example: "407462"
+            Ticker:
+              description: Ticker de referência.
+              type: string
+              example: "MGLU3"
+        InterfaceDate:
+          description: Data da posição da ação.
+          type: string
+          example: "2024-01-12T00:00:00Z"
+        PreferenceToIncome:
+          description: Preferência para renda.
+          type: string
+          example: "ON      NM"
+        FirstDealingDate:
+          description: Data da primeira negociação.
+          type: string
+          example: "2021-04-07T00:00:00Z"
+        ReferencePrice:
+          description: Preço de referência.
+          type: string
+          example: "0.1"
+        QuotingFactor:
+          description: Fator de cotação.
+          type: string
+          example: "1.0"
+        IssuerCge:
+          description: Código interno (CGE) do emissor.
+          type: string
+          example: "387997"
+        EquityTypeDescription:
+          description: Descrição do tipo de patrimônio.
+          type: string
+          example: "ON      NM"
+    StructuredProducts:
+      description: Produto Estruturado.
+      type: object
+      properties:
+        Code:
+          description: Código do produto estruturado.
+          type: string
+          example: "5833330"
+        Name:
+          description: Nome do produto estruturado.
+          type: string
+          example: "BTG product"
+        ReferenceSecurityCode:
+          description: Código de segurança de referência.
+          type: string
+          example: "123456"
+        ReferenceProductSymbol:
+          description: Símbolo do produto de referência.
+          type: string
+          example: "CDEF3"
+        FixingDate:
+          description: Data de fixação.
+          type: string
+          example: "2024-10-28T00:00:00Z"
+        Quantity:
+          description: Quantidade.
+          type: string
+          example: "500"
+        GrossValue:
+          description: Valor bruto.
+          type: string
+          example: "0.1"
+        StockPositions:
+          description: Posições de estoque
+          type: array
+          items:
+            $ref: "#/components/schemas/StockPositions"
+        CetipOptionPosition:
+          description: Opções Cetip
+          type: array
+          items:
+            $ref: "#/components/schemas/CetipOptionPosition"
+    PortfolioInvestments:
+      description: Portfólio.
+      type: object
+      properties:
+        Code:
+          description: Código do Portfólio.
+          type: string
+          example: "SMCAP"
+        GrossValue:
+          description: Valor bruto.
+          type: string
+          example: "0.1"
+        Name:
+          description: Nome do Portfólio.
+          type: string
+          example: "5833330"
+        StockPositions:
+          description: Posições de estoque.
+          type: array
+          items:
+            $ref: "#/components/schemas/StockPositions"
+    CollateralPositions:
+      description: Ativos em garantia
+      type: object
+      properties:
+        CollateralDescription:
+          description: Descrição
+          type: string
+          example: "COBERTURA CBLC"
+        Description:
+          description: Descrição
+          type: string
+          example: "PETRORIO    ON      NM"
+        MarketPrice:
+          description: Preço de mercado
+          type: string
+          example: "0.1"
+        Quantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        Ticker:
+          description: Simbolo do ativo
+          type: string
+          example: "PRIO3"
+        TotalValue:
+          description: Saldo bruto
+          type: string
+          example: "0.1"
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "1105783"
+    Derivative:
+      description: Derivativos
+      type: object
+      properties:
+        NDFPosition:
+          description: NDF
+          type: array
+          items:
+            $ref: "#/components/schemas/NDFPosition"
+        BMFFuturePosition:
+          description: Futuros BMF
+          type: array
+          items:
+            $ref: "#/components/schemas/BMFFuturePosition"
+        BMFOptionPosition:
+          description: Opções BMF
+          type: array
+          items:
+            $ref: "#/components/schemas/BMFOptionPosition"
+        CetipOptionPosition:
+          description: Opções Cetip
+          type: array
+          items:
+            $ref: "#/components/schemas/CetipOptionPosition"
+        SwapPosition:
+          description: Swap
+          type: array
+          items:
+            $ref: "#/components/schemas/SwapPosition"
+    NDFPosition:
+      description: NDF
+      type: object
+      properties:
+        NDFCode:
+          description: Código NDF
+          type: string
+          example: "706456"
+        BuySell:
+          description: Compra ou venda
+          type: string
+          example: "VENDA"
+        MaturityDate:
+          description: Data de vencimento
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        CurrentSecurityPrice:
+          description: Preço de segurança atual
+          type: string
+          example: "0.1"
+        GrossValue:
+          description: Valor bruto
+          type: string
+          example: "0.1"
+        InceptionDate:
+          description: Data de início
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        ForwardRate:
+          description: Taxa a termo
+          type: string
+          example: "0.1"
+        Principal:
+          description: Valor principal
+          type: string
+          example: "0.1"
+        CurrentCurrencyPrice:
+          description: Preço atual da moeda
+          type: string
+          example: "0.1"
+        IOFTax:
+          description: Imposto IOF
+          type: string
+          example: "0.1"
+        IncomeTax:
+          description: Imposto de renda
+          type: string
+          example: "0.1"
+        PriceType:
+          description: Tipo de preço
+          type: string
+          example: "5"
+        ReferencedSecurity:
+          description: Segurança referenciada
+          type: string
+          example: "USD"
+        ValueType:
+          description: Tipo de valor
+          type: string
+          example: "Mercado Fechamento"
+    BMFFuturePosition:
+      description: Futuros BMF
+      type: object
+      properties:
+        Description:
+          description: Descrição
+          type: string
+          example: "WDOF"
+        BuySell:
+          description: Posição
+          type: string
+          example: "Vendida"
+        Quantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        MarketPrice:
+          description: Preço de mercado
+          type: string
+          example: "0.1"
+        MarketValue:
+          description: Valor de mercado
+          type: string
+          example: "0.1"
+        MaturityDate:
+          description: Vencimento
+          type: string
+          example: "Dez/2021"
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "4487201"
+        Ticker:
+          description: Símbolo do ativo
+          type: string
+          example: "WDOFZ21"
+    BMFOptionPosition:
+      description: Opções BMF
+      type: object
+      properties:
+        Ticker:
+          description: Simbolo do ativo
+          type: string
+          example: "ICFCZPJ7"
+        BuySell:
+          description: Posição
+          type: string
+          example: "Comprada"
+        Quantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        MarketPremiumValue:
+          description: Prêmio de mercado
+          type: string
+          example: "0.1"
+        MarketValue:
+          description: Valor de mercado
+          type: string
+          example: "0.1"
+        MaturityDate:
+          description: Data de exercício
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        StrikePrice:
+          description: Preço de exercício
+          type: string
+          example: "0.1"
+        OptionType:
+          description: Tipo
+          type: string
+          example: "Call"
+        GrossValue:
+          description: Valor bruto
+          type: string
+          example: "0.1"
+        PremiumValue:
+          description: Valor do prêmio
+          type: string
+          example: "0.1"
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "4774075"
+        SecurityDescription:
+          description: Descrição do código do ativo
+          type: string
+          example: "OPÇÃO S/ FUTURO DE ICF"
+    CetipOptionPosition:
+      description: Opção Cetip
+      type: object
+      properties:
+        Underlying:
+          description: Ativo subjacente
+          type: string
+          example: "IRBR3"
+        BuySell:
+          description: Posição de Compra ou venda
+          type: string
+          example: "Comprada"
+        Quantity:
+          description: Quantidade
+          type: string
+          example: "100"
+        MarketPremiumValue:
+          description: Valor do prêmio de mercado
+          type: string
+          example: "0.1"
+        MarketValue:
+          description: Valor de mercado
+          type: string
+          example: "0.1"
+        QuotingFactor:
+          description:
+          type: string
+          example:
+        MaturityDate:
+          description: Data de exercício
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        StrikePrice:
+          description: Preço de exercício
+          type: string
+          example: "0.1"
+        OptionType:
+          description: Tipo (Put ou Call)
+          type: string
+          example: "Put"
+        PortfolioPercentage:
+          description: Porcentagem do portfólio.
+          type: string
+          example: "0.1"
+        DealPrice:
+          description: Preço da oferta.
+          type: string
+          example: "0.1"
+        GrossValue:
+          description: Valor bruto.
+          type: string
+          example: "0.1"
+        PremiumValue:
+          description: Valor Premium
+          type: string
+          example: "0.1"
+        KnockIn:
+          description: Valor KnockIn.
+          type: string
+          example: "0.1"
+        KnockOut:
+          description: Valor KnockOut.
+          type: string
+          example: "0.1"
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "1200128"
+        InterfaceDate:
+          description: Data da posição da opção.
+          type: string
+          example: "2024-01-12T00:00:00Z"
+        CodAsset:
+          description: Código do ativo
+          type: string
+          example: "1200128"
+        ReferencePremium:
+          description: Referência Premium.
+          type: string
+          example: "0.1"
+        BarrierType:
+          description: Tipo de barreira.
+          type: string
+          example: "Discreta"
+        RebatePremium:
+          description: Prêmio de desconto.
+          type: string
+          example: "0.1"
+        FixingDate:
+          description: Data de fixação.
+          type: string
+          example: "2024-10-28T00:00:00Z"
+        AccountingGroup:
+          description: Grupo de Contabilidade.
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountingGroup"
+    SwapPosition:
+      description: Swap
+      type: object
+      properties:
+        SwapCode:
+          description: Código de swap
+          type: string
+          example: "562104"
+        PrincipalAmount:
+          description: Principal
+          type: string
+          example: "0.1"
+        MarketValueAsset:
+          description: Valor passivo
+          type: string
+          example: "0.1"
+        MarketValueLiability:
+          description: Valor ativo
+          type: string
+          example: "0.1"
+        TotalValue:
+          description: Resultado
+          type: string
+          example: "0.1"
+        IndexAsset:
+          description: Indexador passivo
+          type: string
+          example: "CDIE"
+        PorcentIndexAsset:
+          description: Indexador passivo em %
+          type: string
+          example: "0.1"
+        CupomInterestRateAsset:
+          description: Cupom/taxa passivo
+          type: string
+          example: "0.1"
+        InceptionDate:
+          description: Data inicial
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        MaturityDate:
+          description: Data final
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        IndexLiability:
+          description: Indexador ativo
+          type: string
+          example: "TAXA PRE"
+        PorcentIndexLiability:
+          description: Indexador ativo em %
+          type: string
+          example: "0.1"
+        CupomInterestRateLiability:
+          description: Cupom/taxa ativo
+          type: string
+          example: "0.1"
+        OperatorCode:
+          description: Código do operador
+          type: string
+          example: "0"
+        PriceType:
+          description: Tipo de preço
+          type: string
+          example: "1"
+        ValueType:
+          description: Tipo de valor
+          type: string
+          example: "Contábil"
+    FixedIncomeStructuredNote:
+      description: COE.
+      type: object
+      properties:
+        Issuer:
+          description: Emissor
+          type: string
+          example: "BANCO MORGAN STANLEY SA"
+        IssueDate:
+          description: Data de início
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        MaturityDate:
+          description: Vencimento
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        ReferenceIndexName:
+          description: Index de referência
+          type: string
+          example: "PRE"
+        ReferenceIndexValue:
+          description: Taxa do índice em %
+          type: string
+          example: "100% PRE"
+        Quantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        CostPrice:
+          description: Preço de compra
+          type: string
+          example: "0.1"
+        Price:
+          description: Preço
+          type: string
+          example: "0.1"
+        InitialInvestmentValue:
+          description: Valor de compra
+          type: string
+          example: "0.1"
+        GrossValue:
+          description: Saldo bruto
+          type: string
+          example: "0.1"
+        NetValue:
+          description: Saldo líquido
+          type: string
+          example: "0.1"
+        AccountingGroupCode:
+          description: Código do grupo contábil
+          type: string
+          example: "COE"
+        IOFTax:
+          description: IOF
+          type: string
+          example: "0.1"
+        IncomeTax:
+          description: Imposto de renda
+          type: string
+          example: "0.1"
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "2468784"
+        Ticker:
+          description: Simbolo do ativo
+          type: string
+          example: "COE-MS0119D2WD2"
+        Yield:
+          description: Rendimento
+          type: string
+          example: "0.1"
+        YieldToMaturity:
+          description: Rendimento até o vencimento
+          type: string
+          example: "0.1"
+        FantasyName:
+          description: Código de série
+          type: string
+          example: "MORGANSTANLEYBM"
+        InterfaceDate:
+          description: Data da interface
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        PriceIncomeTax:
+          description: Preço do imposto de renda
+          type: string
+          example: "0.1"
+        PriceVirtualIOF:
+          description: Preço do IOF
+          type: string
+          example: "0.1"
+        DateTimeUpdate:
+          description: Data e hora da atualização
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        Description:
+          description: Descrição
+          type: string
+          example: "Figura: Call | Ativo Subjacente: MSFDMSV9 | Capital Garantido: 100.10%"
+        CetipCode:
+          description: Código Cetip
+          type: string
+          example: "MS0119D2WD2"
+    PayableReceivables:
+      description: Contas a Pagar
+      type: object
+      properties:
+        Credit:
+          description: Crédito.
+          type: array
+          items:
+            $ref: "#/components/schemas/Credit"
+    Credit:
+      description: Crédito
+      type: object
+      properties:
+        Description:
+          description: Descrição
+          type: string
+          example: "Juros"
+        FinancialValue:
+          description: Valor financeiro
+          type: string
+          example: "0.1"
+        SettlementDate:
+          description: Data de liquidação
+          type: string
+          example: "2021-07-28T21:52:23Z"
+    PendingSettlements:
+      description: Valores em trânsito
+      type: object
+      properties:
+        FixedIncome:
+          description: Renda fixa
+          type: array
+          items:
+            $ref: "#/components/schemas/FixedIncome1"
+        InvestmentFund:
+          description: Fundos de investimento
+          type: array
+          items:
+            $ref: "#/components/schemas/InvestmentFund1"
+        Equities:
+          description: Ações
+          type: array
+          items:
+            $ref: "#/components/schemas/Equities1"
+        Derivative:
+          description: Derivativos
+          type: array
+          items:
+            $ref: "#/components/schemas/Derivative1"
+        Pension:
+          description: Previdência
+          type: array
+          items:
+            $ref: "#/components/schemas/Pension"
+        Others:
+          description: Outros
+          type: array
+          items:
+            $ref: "#/components/schemas/Others"
+    FixedIncome1:
+      description: Renda fixa
+      type: object
+      properties:
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "4564"
+        Description:
+          description: Descrição
+          type: string
+          example: "ENERGIAS BR ON      NM"
+        FinancialValue:
+          description: Valor financeiro
+          type: string
+          example: "0.1"
+        SettlementDate:
+          description: Data de liquidação
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        Transaction:
+          description: Transação
+          type: string
+          example: "DEPÓSITO"
+    InvestmentFund1:
+      description: Fundos de investimento
+      type: object
+      properties:
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "1075572"
+        Description:
+          description: Descrição
+          type: string
+          example: "BTG PACTUAL INVESTMAIS SIMPLES"
+        FinancialValue:
+          description: Valor financeiro
+          type: string
+          example: "0.1"
+        SettlementDate:
+          description: Data de liquidação
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        Transaction:
+          description: Transação
+          type: string
+          example: "APLICAÇÃO"
+    Equities1:
+      description: Ações
+      type: object
+      properties:
+        Ticker:
+          description: Simbolo do ativo
+          type: string
+          example: "CMIA1"
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "1123"
+        Description:
+          description: Descrição
+          type: string
+          example: "DIVIDENDOS - GERDAU MET  PN  EDJ N1"
+        FinancialValue:
+          description: Valor financeiro
+          type: string
+          example: "0.1"
+        SettlementDate:
+          description: Data de liquidação
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        Transaction:
+          description: Transação
+          type: string
+          example: "PROVENTO"
+    Derivative1:
+      description: Derivativos
+      type: object
+      properties:
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "45613"
+        Description:
+          description: Descrição
+          type: string
+          example: "USD"
+        FinancialValue:
+          description: Valor financeiro
+          type: string
+          example: "0.1"
+        SettlementDate:
+          description: Data de liquidação
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        Transaction:
+          description: Transação
+          type: string
+          example: "VENCIMENTO NDF"
+    Pension:
+      description: Previdência
+      type: object
+      properties:
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "365138"
+        Description:
+          description: Descrição
+          type: string
+          example: "BTGP PREV CONS FIQ"
+        FinancialValue:
+          description: Valor financeiro
+          type: string
+          example: "0.1"
+        SettlementDate:
+          description: Data de liquidação
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        Transaction:
+          description: Transação
+          type: string
+          example: "Aporte"
+    Others:
+      description: Outros
+      type: object
+      properties:
+        SecurityCode:
+          description: Código do ativo
+          type: string
+          example: "10154"
+        Description:
+          description: Descrição
+          type: string
+          example: "DI1FF16"
+        FinancialValue:
+          description: Valor financeiro
+          type: string
+          example: "0.1"
+        SettlementDate:
+          description: Data de liquidação
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        Transaction:
+          description: Transação
+          type: string
+          example: "Compra"
+    Cash:
+      description: Dinheiro
+      type: object
+      properties:
+        CashCollateral:
+          description: Garantia em dinheiro
+          type: array
+          items:
+            $ref: "#/components/schemas/CashCollateral"
+        CurrentAccount:
+          description: Conta corrente
+          type: object
+          properties:
+            Value:
+              description: Valor
+              type: string
+              example: "0.1"
+            PositionDate:
+              description: Data da posição
+              type: string
+              example: "2021-07-28T21:52:23Z"
+        CashInvested:
+          description: Dinheiro investido
+          type: array
+          items:
+            $ref: "#/components/schemas/CashInvested"
+    CashCollateral:
+      description: Dinheiro em garantia
+      type: object
+      properties:
+        CollateralDescription:
+          description: Descrição da garantia
+          type: string
+          example: "Garantia em dinheiro"
+        FinancialValue:
+          description: Valor financeiro
+          type: string
+          example: "0.1"
+        Custodian:
+          description: Custodiante
+          type: string
+          example: "BTG Pactual"
+        CustodianCode:
+          description: Código do custodiante
+          type: string
+          example: "123456"
+    CashInvested:
+      description: Dinheiro investido
+      type: object
+      properties:
+        MovementID:
+          description: Id da movimentação
+          type: string
+          example: "9ab3dd5b8f984504bd7f93e2ca631f24"
+        Name:
+          description: Nome
+          type: object
+          properties:
+            CodAtivo:
+              description: Código do ativo
+              type: string
+              example: "5087553"
+            Nome:
+              description: Nome
+              type: string
+              example: "CDIE"
+            Indexador:
+              description: Indexador
+              type: string
+              example: "10.10%CDIE"
+        CostPrice:
+          description: Preço de compra
+          type: string
+          example: "0.1"
+        AcquisitionDate:
+          description: Data da aquisição
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        Quantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        IncomeTax:
+          description: Imposto de renda
+          type: string
+          example: "0.1"
+        IofTax:
+          description: Imposto IOF
+          type: string
+          example: "0.1"
+        NetValue:
+          description: Saldo liquido
+          type: string
+          example: "0.1"
+        GrossValue:
+          description: Saldo bruto
+          type: string
+          example: "0.1"
+        Yield:
+          description: Rendimento
+          type: string
+          example: "0.1"
+        IssueDate:
+          description: Data de emissão
+          type: string
+          example: "2021-07-28T21:52:23Z"
+        MaturityDate:
+          description: Data de vencimento
+          type: string
+          example: "2021-07-28T21:52:23Z"
+    CryptoCoins:
+      description: Crypto Ativos
+      type: object
+      properties:
+        quantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        financial:
+          description: Valor financeiro
+          type: string
+          example: "0.1"
+        grossFinancial:
+          description: Valor financeiro bruto
+          type: string
+          example: "0.1"
+        financialClosing:
+          description: Valor financeiro fechado
+          type: string
+          example: "0.1"
+        grossFinancialClosing:
+          description: Valor financeiro bruto fechado
+          type: string
+          example: "0.1"
+        costBasis:
+          description: Base de custo
+          type: string
+          example: "0.1"
+        positionDate:
+          description: Data da posição
+          type: string
+          example: "2023-05-03T00:00:00Z"
+        updatedDate:
+          description: Data de atualização
+          type: string
+          example: "2023-05-03T00:00:00Z"
+        puClosing:
+          description: Preço unitário fechado
+          type: string
+          example: "0.1"
+        marketPrice:
+          description: Preço de mercado
+          type: string
+          example: "0.1"
+        incomeTax:
+          description: Imposto de renda
+          type: string
+          example: "0.1"
+        iofTax:
+          description: IOF
+          type: string
+          example: "0.1"
+        asset:
+          description: Ativo
+          type: object
+          properties:
+            name:
+              description: Nome do crypto ativo
+              type: string
+              example: "BtgDol (BTGBRL)"
+            code:
+              description: Código do cripto ativo
+              type: string
+              example: "1234567"
+            type:
+              description: Tipo de cripto (Neste caso sempre será Moeda)
+              type: string
+              example: "Moeda"
+            productCode:
+              description: Código do produto
+              type: string
+              example: "123"
+        acquisitions:
+          description: Aquisições
+          type: array
+          items:
+            $ref: "#/components/schemas/CryptoAcquisition"
+    CryptoAcquisition:
+      description: Aquisições
+      type: object
+      properties:
+        quantity:
+          description: Quantidade
+          type: string
+          example: "0.1"
+        ftsId:
+          description: Identificador do FTS.
+          type: string
+          example: "12345678"
+        financial:
+          description: Valor financeiro
+          type: string
+          example: "0.1"
+        grossFinancial:
+          description: Valor financeiro bruto
+          type: string
+          example: "0.1"
+        financialClosing:
+          description: Valor financeiro fechado
+          type: string
+          example: "0.1"
+        grossFinancialClosing:
+          description: Valor financeiro bruto fechado
+          type: string
+          example: "0.1"
+        costBasis:
+          description: Base de custo
+          type: string
+          example: "0.1"
+        invoiceCode:
+          description: Código de fatura
+          type: string
+          example: "d0bc8ef3-3c98-4e0e-a7a9-94f6f76bdb1b"
+        incomeTax:
+          description: Imposto de renda
+          type: string
+          example: "0.1"
+        iofTax:
+          description: IOF
+          type: string
+          example: "0.1"
+        updatedDate:
+          description: Data de atualização
+          type: string
+          example: "2023-05-04T12:48:51.6064218-03:00"
+        interfaceDate:
+          description: Data de transação
+          type: string
+          example: "2023-05-03T00:00:00Z"
+    DebtEarlyTerminationSchedules:
+      description: Cronogramas de rescisão antecipada de dívida
+      type: object
+      properties:
+        IndexRateMultiplier:
+          description: Multiplicador de taxa de índice
+          type: string
+          example: "102.5"
+        Rate:
+          description: Valor da taxa
+          type: string
+          example: "0.0"
+        Type:
+          description: Tipo
+          type: string
+          example: "NO"
+        EarlyTerminationPeriod:
+          description: Período de Rescisão Antecipada
+          type: object
+          properties:
+            FromDateTime:
+              description: data de início do período.
+              type: string
+              example: "2023-08-22T00:00:00-03:00"
+            ToDateTime:
+              description: data de término do período.
+              type: string
+              example: "2023-08-23T00:00:00-03:00"
+    AccountingGroup:
+      description: Grupo de Contabilidade.
+      type: object
+      properties:
+        Code:
+          description: Código.
+          type: string
+          example: "5833330"
+        Name:
+          description: Nome do ativo.
+          type: string
+          example: "BTG ASSET NAME"
+        Quantity:
+          description: Quantidade.
+          type: string
+          example: "100"
+        KnockIn:
+          description: Valor do KnockIn.
+          type: string
+          example: "0.1"
+        KnockOut:
+          description: Valor do KnockOut.
+          type: string
+          example: "0.1"
+        StrikePrice:
+          description: Preço de exercício.
+          type: string
+          example: "123"
+        MarketValue:
+          description: Valor de mercado
+          type: string
+          example: "0.1"
+        TypeGroup:
+          description: Código do Tipo do Grupo
+          type: string
+          example: "2"
+        ReferencePremium:
+          description: Referência Premium.
+          type: string
+          example: "0.1"
+        BarrierType:
+          description: Tipo de barreira.
+          type: string
+          example: "Discreta"
+        ReferenceProductSymbol:
+          description: Símbolo de produto de referência.
+          type: string
+          example: "ABCDE3"
+    InvestmentFundCotaCetipada:
+      description: Fundos de investimentos externo.
+      type: object
+      properties:
+        ShareValue:
+          description: Valor da cota.
+          type: string
+          example: "0.1"
+        Fund:
+          description: Fundo
+          type: object
+          properties:
+            FundName:
+              description: Nome do fundo.
+              type: string
+              example: "SPX NIMITZ FIC FI MULT ACCESS D"
+            SecurityCode:
+              description: Código do ativo.
+              type: string
+              example: "1573210"
+            FundCGECode:
+              description: Código CGE do fundo.
+              type: string
+              example: "518389"
+            FundCNPJCode:
+              description: CNPJ do fundo.
+              type: string
+              example: "29127763000180"
+            DatePortfolio:
+              description: Data do valor da cota.
+              type: string
+              example: "2021-02-17T00:00:00"
+            ManagerName:
+              description: Gestor do fundo.
+              type: string
+              example: "PACTUAL WM GESTAO DE RECURSOS LTDA"
+            ManagerCGECode:
+              description: código do gestor do fundo.
+              type: string
+              example: "323232"
+            FundLiquidity:
+              description: Liquidez do fundo.
+              type: string
+              example: "61"
+            BenchMark:
+              description: marca referência
+              type: string
+              example: "CDI"
+            EsTipoPortfolio:
+              description: Tipo de portfólio.
+              type: string
+              example: "20"
+            TipoCvm:
+              description: Tipo de CVM
+              type: string
+              example: "4"
+            EntityType:
+              description: Tipo de entidade (C ou 4)
+              type: string
+              example: "4"
+            RelatedSecurityCodeClass:
+              description: código de segurança relacionado à classe.
+              type: string
+              example: "354689"
+            RelatedSecurityCodeFund:
+              description: código de segurança relacionado ao fundo.
+              type: string
+              example: "354689"
+            RelatedClassCGECode:
+              description: código(CGE) relacionado à classe.
+              type: string
+              example: "354689"
+            RelatedFundCGECode:
+              description: código(CGE) relacionado ao fundo.
+              type: string
+              example: "354689"
+        Acquisition:
+          description: Aquisição.
+          type: array
+          items:
+            $ref: "#/components/schemas/Acquisition"
+        CotaCetipadaFundoExterno:
+          description: flag indicando se cota é de fundo externo.
+          type: string
+          example: "false"
+        PositionDate:
+          description: Data da posição do fundo.
+          type: string
+          example: "2024-01-12T00:00:00Z"
+        ProcessingDateTime:
+          description: Data-hora de processamento.
+          type: string
+          example: "2024-01-15T14:06:42.606Z"
+    CashCollateralRoot:
+      description: Garantia em dinheiro
+      type: object
+      properties:
+        BlockedMethod:
+          description: Método bloqueado
+          type: string
+          example: ""
+        FinancialValue:
+          description: Valor financeiro
+          type: string
+          example: "0.1"
+        ReserveType:
+          description: Tipo de reserva
+          type: string
+          example: ""
+        Protocol:
+          description: Protocolo
+          type: string
+          example: ""
+        PositionDate:
+          description: Data da posição
+          type: string
+          example: "2021-07-28T00:00:00"
+    Precatories:
+      description: Precatórios.
+      type: object
+      properties:
+        IssueDate:
+          description: Data de emissão.
+          type: string
+          example: "2020-01-15T00:00:00"
+        Quantity:
+          description: Quantidade.
+          type: string
+          example: "500"
+        GrossValue:
+          description: Valor bruto.
+          type: string
+          example: "1000.50"
+        CostPrice:
+          description: Preço de custo.
+          type: string
+          example: "950.75"
+        MarketPrice:
+          description: Preço de mercado.
+          type: string
+          example: "2.00"
+        InvestedValue:
+          description: Valor investido.
+          type: string
+          example: "1000.00"
+        Asset:
+          description: Ativo.
+          type: object
+          properties:
+            AssetCode:
+              description: Código do ativo.
+              type: string
+              example: "123456"
+            Ticker:
+              description: Símbolo do ativo.
+              type: string
+              example: ""
+            FantasyName:
+              description: Nome fantasia.
+              type: string
+              example: "Precatório"
+            Type:
+              description: Tipo.
+              type: string
+              example:
+            RiskType:
+              description: Tipo de risco.
+              type: string
+              example:
+            ProductCode:
+              description: Código do produto.
+              type: string
+              example: "PRD-123456"
+            AssetType:
+              description: Tipo de ativo.
+              type: string
+              example:
+            AssetSubType:
+              description: Subtipo do ativo.
+              type: string
+              example:
+            SettleDate:
+              description: Data de liquidação.
+              type: string
+              example: "2020-02-15T00:00:00"
+            MaturityDate:
+              description: Data de vencimento.
+              type: string
+              example: "2025-01-15T00:00:00"
+        Acquisitions:
+          description: Aquisições.
+          type: array
+          items:
+            $ref: "#/components/schemas/PrecatoryAcquisition"
+        Scenarios:
+          description: Cenários.
+          type: array
+          items:
+            $ref: "#/components/schemas/PrecatoryScenario"
+    PrecatoryAcquisition:
+      description: Aquisições de precatórios.
+      type: object
+      properties:
+        InvoiceCode:
+          description: Código da fatura.
+          type: string
+          example: "inv-987654"
+        InterfaceDate:
+          description: Data da interface.
+          type: string
+          example: "2021-07-28T00:00:00"
+        IssueDate:
+          description: Data de emissão.
+          type: string
+          example: "2021-07-28T00:00:00"
+        Quantity:
+          description: Quantidade.
+          type: string
+          example: "100"
+        GrossValue:
+          description: Valor bruto.
+          type: string
+          example: "200.00"
+        CostPrice:
+          description: Preço de custo.
+          type: string
+          example: "150.00"
+        InvestedValue:
+          description: Valor investido.
+          type: string
+          example: "180.00"
+    PrecatoryScenario:
+      description: Cenários de precatórios.
+      type: object
+      properties:
+        Classifier:
+          description: Código do classificador.
+          type: string
+          example: "CLS-001"
+        EstimatedDeadlineInMonths:
+          description: Prazo estimado em meses.
+          type: string
+          example: "24"
+        Rentability:
+          description: Rentabilidade.
+          type: string
+          example: "5.00"
+        Multiplier:
+          description: Multiplicador.
+          type: string
+          example: "1.10"
+        RentabilityTir:
+          description: Rentabilidade TIR.
+          type: string
+          example: "4.50"
+        Indexer:
+          description: Indexador.
+          type: string
+          example: "IPCA"
+        RentabilityFormatted:
+          description: Rentabilidade formatada.
+          type: string
+          example: "5% ao ano"
+        EstimatedDeadlineFormatted:
+          description: Prazo estimado formatado.
+          type: string
+          example: "24 meses"
+    PrecatoriesCR:
+      description: Precatórios CR.
+      type: object
+      properties:
+        IssueDate:
+          description: Direitos creditórios.
+          type: string
+          example: "2020-01-15T00:00:00"
+        Quantity:
+          description: Quantidade.
+          type: string
+          example: "100"
+        GrossValue:
+          description: Valor bruto.
+          type: string
+          example: "2000.00"
+        CostPrice:
+          description: Preço de custo.
+          type: string
+          example: "1500.00"
+        MarketPrice:
+          description: Preço de mercado.
+          type: string
+          example: "1800.00"
+        InvestedValue:
+          description: Valor investido.
+          type: string
+          example: "1900.00"
+        PositionDate:
+          description: Data da posição.
+          type: string
+          example: "2021-07-28T00:00:00"
+        Asset:
+          description: Ativo.
+          type: object
+          properties:
+            AssetCode:
+              description: Código do ativo.
+              type: string
+              example: "654321"
+            Ticker:
+              description: Símbolo do ativo.
+              type: string
+              example: ""
+            FantasyName:
+              description: Nome fantasia.
+              type: string
+              example: "Precatório CR"
+            Type:
+              description: Tipo.
+              type: string
+              example:
+            RiskType:
+              description: Tipo de risco.
+              type: string
+              example:
+            ProductCode:
+              description: Código do produto.
+              type: string
+              example: "PRD-654321"
+            AssetType:
+              description: Tipo de ativo.
+              type: string
+              example:
+            AssetSubType:
+              description: Subtipo do ativo.
+              type: string
+              example:
+            SettleDate:
+              description: Data de liquidação.
+              type: string
+              example: "2020-02-15T00:00:00"
+            MaturityDate:
+              description: Data de vencimento.
+              type: string
+              example: "2025-01-15T00:00:00"
+        Acquisitions:
+          description: Aquisições.
+          type: array
+          items:
+            $ref: "#/components/schemas/PrecatoriesCRAcquisition"
+        Scenarios:
+          description: Cenários.
+          type: array
+          items:
+            $ref: "#/components/schemas/PrecatoriesCRScenario"
+        EventCreateDate:
+          description: Data de criação do evento.
+          type: string
+          example: "2021-07-28T00:00:00"
+    PrecatoriesCRAcquisition:
+      description: Aquisições de precatórios CR.
+      type: object
+      properties:
+        invoiceCode:
+          description: Código da fatura.
+          type: string
+          example: "inv-123456"
+        interfaceDate:
+          description: Data da interface.
+          type: string
+          example: "2021-07-28T00:00:00"
+        IssueDate:
+          description: Data de emissão.
+          type: string
+          example: "2021-07-28T00:00:00"
+        Quantity:
+          description: Quantidade.
+          type: string
+          example: "50"
+        GrossValue:
+          description: Valor bruto.
+          type: string
+          example: "1000.00"
+        CostPrice:
+          description: Preço de custo.
+          type: string
+          example: "800.00"
+        InvestedValue:
+          description: Valor investido.
+          type: string
+          example: "900.00"
+    PrecatoriesCRScenario:
+      description: Cenários de precatórios CR.
+      type: object
+      properties:
+        Classifier:
+          description: Código do classificador.
+          type: string
+          example: "CLS002"
+        EstimatedDeadlineInMonths:
+          description: Prazo estimado em meses.
+          type: string
+          example: "36"
+        Rentability:
+          description: Rentabilidade.
+          type: string
+          example: "6.00"
+        Multiplier:
+          description: Multiplicador.
+          type: string
+          example: "1.15"
+        RentabilityTir:
+          description: Rentabilidade TIR.
+          type: string
+          example: "5.50"
+        Indexer:
+          description: Indexador.
+          type: string
+          example:
+        RentabilityFormatted:
+          description: Rentabilidade formatada.
+          type: string
+          example:
+        EstimatedDeadlineFormatted:
+          description: Prazo estimado formatado.
+          type: string
+          example:

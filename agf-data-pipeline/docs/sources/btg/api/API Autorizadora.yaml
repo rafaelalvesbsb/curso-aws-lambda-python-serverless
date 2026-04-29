@@ -1,0 +1,87 @@
+openapi: 3.0.2
+info:
+  version: 1.0.0
+  title: API Autorizadora
+  description: |
+    API autorizadora de requests
+servers:
+  - url: https://api.btgpactual.com/iaas-auth
+paths:
+  /api/v1/authorization/oauth2/accesstoken:
+    post:
+      tags:
+      - post-generate-token
+      security:
+        - basicAuth: []
+      summary: 'Gera access_token usando Oauth2'
+      description: |
+        Para a geração do header access_token é usado como base o Oauth2, sendo `grant_type=client_credentials`. 
+        
+        **O access_token gerado possui validade de 15 minutos**, portanto é possível fazer cache dele ao invés de gerar um novo a cada novo request para as outras APIs que requerem access_token.
+        
+        Para gerar um access_token é usado um autorizador do tipo Basic. Com o *client_id* e *client_secret* em mãos basta concatená-los e aplicar um base64 da forma abaixo.
+        
+        `base64(client_id:client_secret)`
+        
+        O resultado da função acima deve ser informado no header Authorization como Basic: `Authorization: Basic 12232131`
+        
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: N/A *(Não se aplica)* 
+
+        Janela de dados: N/A *(Não se Aplica)*
+      parameters:
+        - name: Authorization
+          in: header
+          description: |
+            Header de autorização do tipo Basic.
+
+            *Exemplo:* `Basic ZGVtbzpwQDU1dzByZA==`
+          schema:
+            type: string
+          required: true
+          example: Basic
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  description: Tipo de permissão para o token.
+                  type: string
+                  example: client_credentials
+      responses:
+        '200':
+          description: Access Token gerado com sucesso
+          headers:
+            x-id-pactual:
+              schema:
+                type: string
+                example: 2ffb9cfb-8dae-4956-b8d9-8d04ff5823ee
+              description: Identificador único da requisição
+            access_token:
+              schema:
+                type: string
+                example: "eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas"
+              description: Token de acesso para demais APIs
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic

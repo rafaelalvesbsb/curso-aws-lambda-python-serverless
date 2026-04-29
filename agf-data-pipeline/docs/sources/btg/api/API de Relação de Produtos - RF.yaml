@@ -1,0 +1,403 @@
+openapi: 3.0.1
+info:
+  title: "API de Relação de Produtos - RF"
+  description: API de extração de relatorios de Títulos Públicos, RF, Debêntures, CRA CRI e Compromissadas.
+  version: 3.1.2.0
+servers:
+  - url: https://api.btgpactual.com/api-partner-report-extractor
+paths:
+  /api/v1/report/government-bond:
+    get:
+      tags:
+        - get-partner-report-government-bond
+      summary: Busca relatório de Títulos públicos por parceiro
+      description: |
+        Endpoint responsável pela busca de informações de Relatório de Titulos Públicos por Parceiro.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Partner Report Títulos públicos (partner-report-government-bond)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        ***Caso a chamada for realizada enquanto o mercado estiver fechado, serão retornados apenas os produtos cujo emissor é o BTG Pactual.***
+
+        ***Uma vez solicitado, os dados informados permanecerão estáticos até a próxima atualização a partir das 8h am.***
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: getGovernment
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "202":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/report/fixed-income:
+    get:
+      tags:
+        - get-partner-report-fixed-income
+      summary: Busca relatório de RF por parceiro
+      description: |
+        Endpoint responsável pela busca de informações de Relatório de Renda Fixa por Parceiro. 
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Partner Report Fixed Income (partner-report-fixed-income)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        ***Caso a chamada for realizada enquanto o mercado estiver fechado, serão retornados apenas os produtos cujo emissor é o BTG Pactual.***
+
+        ***Uma vez solicitado, os dados informados permanecerão estáticos até a próxima atualização a partir das 8h am.***
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: getFixedIncome
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "202":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/report/debentures:
+    get:
+      tags:
+        - get-partner-report-debentures
+      summary: Busca relatório de Debêntures por parceiro
+      description: |
+        Endpoint responsável pela busca de informações de Relatório de Debentures por parceiro.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Partner Report Debentures (partner-report-debentures)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        ***Caso a chamada for realizada enquanto o mercado estiver fechado, serão retornados apenas os produtos cujo emissor é o BTG Pactual.***
+
+        ***Uma vez solicitado, os dados informados permanecerão estáticos até a próxima atualização a partir das 8h am.***
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: getDebentures
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "202":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/report/cra-cri:
+    get:
+      tags:
+        - get-partner-report-cra-cri
+      summary: Busca relatório de CRA-CRI por parceiro
+      description: |
+        Endpoint responsável pela busca de informações de Relatório de CRA CRI por Parceiro.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Partner Report CRA CRI (partner-report-cra-cri)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        ***Caso a chamada for realizada enquanto o mercado estiver fechado, serão retornados apenas os produtos cujo emissor é o BTG Pactual.***
+
+        ***Uma vez solicitado, os dados informados permanecerão estáticos até a próxima atualização a partir das 8h am.***
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: getCracris
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "202":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/report/compromissadas:
+    get:
+      tags:
+        - get-partner-report-compromissadas
+      summary: Busca relatório de Compromissadas por parceiro
+      description: |
+        Endpoint responsável pela busca de informações de Relatório de Compromissadas.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Partner Report Compromissadas (partner-report-compromissadas)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        ***Caso a chamada for realizada enquanto o mercado estiver fechado, serão retornados apenas os produtos cujo emissor é o BTG Pactual.***
+
+        ***Uma vez solicitado, os dados informados permanecerão estáticos até a próxima atualização a partir das 8h am.***
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: getCompromissadas
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "202":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: "#/components/schemas/ErrorMetadata"

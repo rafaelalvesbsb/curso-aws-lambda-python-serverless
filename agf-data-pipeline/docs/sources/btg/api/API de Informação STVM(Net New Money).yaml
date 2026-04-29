@@ -1,0 +1,293 @@
+openapi: 3.0.1
+info:
+  title: "API de Informação STVM(Net New Money)"
+  description: API responsável pela busca de dados STVM(Net New Money)
+  version: 3.1.2.0
+servers:
+  - url: https://api.btgpactual.com/api-partner-report-hub
+paths:
+  /api/v1/report/stvm:
+    post:
+      tags:
+        - post-report-stvm-by-partner-and-period
+      summary: Buscar informações de STVM(Net New Money) por parceiro e data
+      description: |
+        Endpoint responsável por buscar um relatório com os dados STVM(Net New Money), pelo CGE do parceiro.
+
+        ***Uma vez solicitado, os dados informados permanecerão estáticos até as 8 horas da manha do proximo dia***
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de dados do STVM (partner-report-stvm)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 10 por hora
+
+        Frequência de atualização: 1x ao dia, às 15h.
+
+        Janela de Dados: D-x a D-2 até 11h am e D-x a D-1 após às 15h.
+
+        Janela de Busca: Intervalo de 365 dias entre data-início e data-fim
+
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StvmRequest"
+      responses:
+        "202":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              schema:
+                type: string
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner
+          description: "Erro interno, o administrador da API deverá ser informado."
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: "#/components/schemas/ErrorMetadata"
+    StvmRequest:
+      type: object
+      properties:
+        startDate:
+          description: "Data inicial da pesquisa"
+          example: "2023-01-15"
+          pattern: "YYYY-MM-DD"
+          type: string
+        endDate:
+          description: "Data final da pesquisa"
+          example: "2023-02-14"
+          pattern: "YYYY-MM-DD"
+          type: string
+    ExampleResponse:
+      title: Exemplo de Retorno - STVM(Net New Money)
+      description: |
+        Dicionário de dados - API de dados STVM(Net New Money)
+
+        Este é o dicionário de dados com os possíveis valores de retorno.
+        O arquivo final terá formato .CSV com os seguintes campos:
+
+        ---
+      properties:
+        cod_carteira:
+          type: string
+          description: Número da conta do cliente.
+          example: "001234567"
+        segment_digital:
+          type: string
+          description: |
+            Segmento da conta do cliente. 
+            Canal associado à movimentação de NNM.
+          example: "B2B"
+        sub_segment_digital:
+          type: string
+          description: |
+            Sub Segmento da conta do cliente. 
+            Subdivisao do Canal associado a movimentacao de NNM.
+          example: "B2B"
+        ativo:
+          type: string
+          description: |
+            Codigo do ativo ou cge.
+            Canal contraparte associado a movimentacao de TC.
+          example: "523765"
+        codigo_ativo:
+          type: string
+          description: Codigo do ativo ou cge
+          example: "cge_523765"
+        descricao:
+          type: string
+          description: Descrição da movimentação
+          example: "Portabilidade de Entrada | BTG PACT TESOURO SELIC PREV FI RF REF DI"
+        tipo_lancamento:
+          type: string
+          description: Tipo do lançamento
+          example: "Portabilidade de Entrada"
+        valor_bruto:
+          type: number
+          description: Valor bruto da movimentação
+          example: 6873.81
+        captacao:
+          type: number
+          description: Valor net new money
+          example: 6873.81
+        quantidade:
+          type: number
+          description: Quantidade de papéis transacionados
+          example: 5871.61
+        pu:
+          type: number
+          description: Preço unitário
+          example: 1.2205902
+        officer_partner_cge:
+          type: string
+          description: CGE do parceiro.
+          example: "784325816"
+        officer_partner_name:
+          type: string
+          description: Nome do parceiro.
+          example: "Example Company"
+        officer_officer_cge:
+          type: string
+          description: CGE do assessor parceiro.
+          example: "773153525"
+        officer_officer_name:
+          type: string
+          description: Nome do Assessor.
+          example: "JOAO DA SILVA"
+        tipo_previdencia:
+          type: string
+          description: |
+            Tipo da previdência. 
+            Classificacao Previdencia em PGBL e VGBL
+          example: "PGBL"
+        cod_counterparty_id:
+          type: string
+          description: |
+            Codigo da contraparte.
+            Para identificar origem e destino de net new money.
+          example: "5436221"
+        contraparte_banco_cnpj:
+          type: string
+          description: CNPJ da contraparte.
+          example: "02466929000136"
+        contraparte_conta:
+          type: string
+          description: Conta da contraparte.
+          example: "001234567"
+        contraparte_agencia:
+          type: string
+          description: Agencia da contraparte.
+          example: "12"
+        contraparte_instituicao:
+          type: string
+          description: Instituição da contraparte.
+          example: "Banco Exemplo"
+        transf_mesmo_titular:
+          type: string
+          description: Flag informando se a transferencia é de mesma titularidade.
+          example: "true"
+        sistema_fonte:
+          type: string
+          description: Sistema fonte da informação.
+          example: "Statement"
+        is_fund:
+          type: string
+          description: Indica se é uma movimentação de conta tipo fundo.
+          example: "false"
+        is_officer_nnm:
+          type: string
+          description: Flag indicando se movimentacao é válida como NNM para o assessor.
+          example: "true"
+        is_partner_nnm:
+          type: string
+          description: Flag indicando se movimentacao é válida como NNM para o escritório.
+          example: "true"
+        is_segment_nnm:
+          type: string
+          description: Flag indicando se movimentacao é válida como NNM para o canal.
+          example: "true"
+        is_bm_nnm:
+          type: string
+          description: Flag indicando se movimentacao é valida como NNM para os BMs (Business Management).
+          example: "true"
+        data_daily:
+          type: string
+          description: |
+            Data competência da operação. É a data em que a movimentação ocorreu em D+1 útil (mais um dia útil).
+            Esta regra é válida para todas as movimentações, exceto movimentações de CC.
+          example: "7/7/2022"
+        data_monthly:
+          type: string
+          description: Data em que a movimentação ocorreu. (Informação legado)
+          example: "7/6/2022"
+        write_timestamp:
+          type: string
+          description: Data e hora da última alteração no registro.
+          example: "12/24/2023  4:08:46 PM"
+        data_captacao:
+          type: string
+          description: Data em que a movimentação ocorreu.
+          example: "7/6/2022"
+        mercado:
+          type: string
+          description: Mercado do ativo. Categoria da posição.
+          example: "PREVIDENCIA"

@@ -1,0 +1,158 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  AGFI Infrastructure — Recursos persistentes (S3, SQS, DynamoDB, API Gateway Domain).
+  Deployado uma vez e mantido entre iterações de código Lambda.
+  Stack: agfi-infra-{Environment}
+
+# ==========================================
+# PARAMETERS
+# ==========================================
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+
+  WebhookDomainName:
+    Type: String
+    Default: testefastapi.alphaspark.com.br
+    Description: Custom domain name for the API Gateway webhook endpoint
+
+# ==========================================
+# RESOURCES
+# ==========================================
+Resources:
+
+  # ── S3 DATA LAKE ──────────────────────────────────────────────────
+  DataLakeBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub 'agfi-data-lake-${Environment}'
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: AGFI
+
+  # ── SQS — Dead Letter Queue ───────────────────────────────────────
+  SyncQueueDLQ:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    Properties:
+      QueueName: !Sub 'agfi-sync-queue-dlq-${Environment}'
+      MessageRetentionPeriod: 1209600  # 14 days
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: AGFI
+
+  # ── SQS — Main Queue ─────────────────────────────────────────────
+  SyncQueue:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    Properties:
+      QueueName: !Sub 'agfi-sync-queue-${Environment}'
+      VisibilityTimeout: 360  # 6× Lambda timeout (300s) — evita re-entrega durante processamento
+      MessageRetentionPeriod: 345600  # 4 days
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt SyncQueueDLQ.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: AGFI
+
+  # ── DynamoDB — Sync State ─────────────────────────────────────────
+  # Movido do template-local.yaml para cá (recurso persistente).
+  SyncStateTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub 'agfi-sync-state-${Environment}'
+      AttributeDefinitions:
+        - AttributeName: sync_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: sync_id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: AGFI
+
+  # ── API Gateway v2 — Custom Domain ───────────────────────────────
+  # Cloudflare tunnel: testefastapi.alphaspark.com.br → http://localstack:4566
+  # LocalStack roteia pelo header Host para a API correta (não para o S3).
+  # Requer Route53 habilitado no LocalStack (habilitado quando SERVICES não está definido).
+  WebhookDomain:
+    Type: AWS::ApiGatewayV2::DomainName
+    DeletionPolicy: Retain
+    Properties:
+      DomainName: !Ref WebhookDomainName
+      DomainNameConfigurations:
+        - CertificateArn: !Sub 'arn:aws:acm:${AWS::Region}:${AWS::AccountId}:certificate/dummy'
+          EndpointType: REGIONAL
+
+# ==========================================
+# OUTPUTS  (exportados para o stack Lambda)
+# ==========================================
+Outputs:
+  DataLakeBucketName:
+    Description: Nome do bucket S3 Data Lake
+    Value: !Ref DataLakeBucket
+    Export:
+      Name: !Sub 'agfi-infra-${Environment}-DataLakeBucketName'
+
+  SyncQueueUrl:
+    Description: URL da fila SQS principal
+    Value: !GetAtt SyncQueue.QueueUrl
+    Export:
+      Name: !Sub 'agfi-infra-${Environment}-SyncQueueUrl'
+
+  SyncQueueArn:
+    Description: ARN da fila SQS principal
+    Value: !GetAtt SyncQueue.Arn
+    Export:
+      Name: !Sub 'agfi-infra-${Environment}-SyncQueueArn'
+
+  SyncQueueName:
+    Description: Nome da fila SQS principal
+    Value: !GetAtt SyncQueue.QueueName
+    Export:
+      Name: !Sub 'agfi-infra-${Environment}-SyncQueueName'
+
+  SyncQueueDLQArn:
+    Description: ARN da Dead Letter Queue
+    Value: !GetAtt SyncQueueDLQ.Arn
+    Export:
+      Name: !Sub 'agfi-infra-${Environment}-SyncQueueDLQArn'
+
+  SyncStateTableName:
+    Description: Nome da tabela DynamoDB de sync state
+    Value: !Ref SyncStateTable
+    Export:
+      Name: !Sub 'agfi-infra-${Environment}-SyncStateTableName'
+
+  WebhookDomainName:
+    Description: Custom domain name do API Gateway webhook
+    Value: !Ref WebhookDomainName
+    Export:
+      Name: !Sub 'agfi-infra-${Environment}-WebhookDomainName'

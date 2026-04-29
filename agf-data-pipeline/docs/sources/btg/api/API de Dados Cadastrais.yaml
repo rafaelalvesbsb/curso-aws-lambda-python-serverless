@@ -1,0 +1,144 @@
+openapi: 3.0.2
+info:
+  version: 1.0.0
+  title: API de Dados Cadastrais
+  description: |
+    API para exibir dados cadastrais de uma conta. Limite de requisições: 60 por minuto.
+servers:
+  - url: https://api.btgpactual.com/iaas-account-management
+paths:
+  /api/v1/account-management/account/{accountNumber}/information:
+    get:
+      summary: 'Busca informações de uma conta'
+      tags:
+        - get-account-information
+      description: |
+        Busca os dados cadastrais de uma conta.
+        
+        *Por motivos de segurança este endpoint possui uma limitação de 60 requisições por minuto.*
+        
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          in: path
+          description: |
+            O número da conta.
+
+            *Exemplo:* `000123456`
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountInformationDTO'
+        '404':
+          description: 'Dados cadastrais da conta não encontrado ou conta não informada'
+components:
+  schemas:
+    AccountInformationDTO:
+      title: Account Information
+      type: object
+      properties:
+        accountNumber:
+          description: 'Número da conta'
+          example: '000123456'
+          type: string
+        holder:
+          description: Titular
+          type: object
+          properties:
+            taxIdentification:
+              description: 'CPF/CNPJ do titular da conta'
+              example: '12345678900'
+              type: string
+            name:
+              description: 'Nome do titular da conta'
+              example: 'José Antônio'
+              type: string
+        coHolders:
+          description: Cotitulares
+          type: array
+          items:
+            $ref: '#/components/schemas/CoHolder'
+        users:
+          description: Usuários da conta
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    Holder:
+      description: Titular da conta
+      type: object
+      properties:
+        taxIdentification:
+          description: 'CPF/CNPJ do titular da conta'
+          example: '12345678900'
+          type: string
+        name:
+          description: 'Nome do titular da conta'
+          example: 'José Antônio'
+          type: string
+    CoHolder:
+      description: Cotitular da conta
+      type: object
+      properties:
+        taxIdentification:
+          description: 'CPF/CNPJ do cotitular da conta'
+          example: '12345678900'
+          type: string
+        name:
+          description: 'Nome do cotitular da conta'
+          example: 'Maria Helena'
+          type: string
+    User:
+      description: Usuário da conta
+      type: object
+      properties:
+        name:
+          description: 'Nome do usuário'
+          example: 'José Antônio'
+          type: string
+        userEmail:
+          description: 'Email do usuário'
+          example: 'jose.antonio@gmail.com'
+          type: string
+        phoneNumber:
+          description: 'Número do telefone do usuário'
+          example: '11-992214894'
+          type: string
+        isOwner:
+          description: 'Flag identificando o usuário dono da conta'
+          example: 'true'
+          type: boolean

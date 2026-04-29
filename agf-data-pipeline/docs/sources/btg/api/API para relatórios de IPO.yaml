@@ -1,0 +1,268 @@
+openapi: 3.0.2
+info:
+  version: 1.0.0
+  title: API para relatórios de IPO
+  description: |
+   Api para disponibilização de dados de pushes e reservas de ofertas ativas de IPO.
+
+servers:
+  - url: https://api.btgpactual.com/iaas-ipo-report
+paths:
+  /api/v1/ipo/report/push:
+    post:
+      tags:
+      - post-ipo-report-push
+      summary: 'Relatório de PUSH de ofertas ativas de IPO'
+      description: |
+         Endpoint responsável pela disponibilização de dados de PUSH de ofertas ativas de IPO.
+
+         Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Push de IPO (ipo-report-push)**. 
+          
+          Sua documentação pode ser encontrada na página de Webhook. 
+          
+          Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+          `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+          ---
+          **Características:**
+
+          Tipo de chamada: Assíncrona
+
+          Limite de requisições: 60 por minuto
+
+          Frequência de atualização: Tempo real
+
+          Janela de dados: N/A *(Não se Aplica)*
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IpoReportPushRequest'
+        required: false
+      responses:
+        '202':
+          description: Accepted
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                    - code: 500
+                      message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                      - code: Authorization Error
+                        message: "access_token: The Token has expired on Wed Jul 28\
+                          \ 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não encontrado:
+                  value:
+                    timestamp: 2021-07-28T12:41:31.887+00:00
+                    status: 404
+                    error: Not Found
+                    message: ""
+                Posição não encontrada:
+                  value:
+                    errors:
+                    - code: 404
+                      message: There is no ipo report for account
+          description: "Não encontrado, caso url do enpoint seja inválida , ou não existe retorno de relatório de ipo para a conta informada"
+        "400":
+          content:
+            application/json:
+              examples:
+                Erro de Validação:
+                  value:
+                    status: 400
+                    title: errors.validation
+                    meta:
+                      globalErrors:
+                      - code: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                          \ - request:idPartnerRequest:9659] is already been being\
+                          \ processed"
+                        message: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                          \ - request:idPartnerRequest:9659] is already been being\
+                          \ processed"
+          description: Requisição com erro de validação# This is a endpoint path.
+  /api/v1/ipo/report/reservation:
+    post:
+      tags:
+      - post-ipo-report-reservation
+      summary: 'Relatório de RESERVAS de ofertas ativas de IPO'
+      description: |
+         Endpoint responsável pela disponibilização de dados de RESERVAS de ofertas ativas de IPO.
+
+          Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Reservas de IPO (ipo-report-reservation)**. 
+          
+          Sua documentação pode ser encontrada na página de Webhook. 
+          
+          Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+          `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+      
+          ---
+          **Características:**
+
+          Tipo de chamada: Assíncrona
+
+          Limite de requisições: 60 por minuto
+
+          Frequência de atualização: Tempo real
+
+          Janela de dados: N/A *(Não se Aplica)*
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IpoReportReservationRequest'
+        required: false
+      responses:
+        '202':
+          description: Accepted
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                    - code: 500
+                      message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                      - code: Authorization Error
+                        message: "access_token: The Token has expired on Wed Jul 28\
+                          \ 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não encontrado:
+                  value:
+                    timestamp: 2021-07-28T12:41:31.887+00:00
+                    status: 404
+                    error: Not Found
+                    message: ""
+                Posição não encontrada:
+                  value:
+                    errors:
+                    - code: 404
+                      message: There is no ipo report for account
+          description: "Não encontrado, caso url do enpoint seja inválida , ou não existe retorno de relatório de ipo para a conta informada"
+        "400":
+          content:
+            application/json:
+              examples:
+                Erro de Validação:
+                  value:
+                    status: 400
+                    title: errors.validation
+                    meta:
+                      globalErrors:
+                      - code: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                          \ - request:idPartnerRequest:9659] is already been being\
+                          \ processed"
+                        message: "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                          \ - request:idPartnerRequest:9659] is already been being\
+                          \ processed"
+          description: Requisição com erro de validação
+components:
+  schemas:
+    IpoReportReservationRequest:
+      title: IpoReportReservationRequest
+      type: object
+      properties:
+        accountNumber:
+              description: 'Número da conta'
+              example: '001234567'
+              type: string
+        distributionName:
+              description: 'Nome da oferta'
+              example: 'QUANT COM UNITARIO - TAXA (CETIP)'
+              type: string
+    IpoReportPushRequest:
+      title: IpoReportPushRequest
+      type: object
+      properties:
+        accountNumber:
+              description: 'Número da conta'
+              example: '001234567'
+              type: string
+        distributionName:
+              description: 'Nome da oferta, a busca é realizada por palavras chaves'
+              example: 'QUANT COM UNITARIO'
+              type: string
+        operationType:
+              description: 'Tipo da Operação: E (EDIÇÃO), R (RESERVA), C (CANCELAMENTO)'
+              example: 'R'
+              type: string
+

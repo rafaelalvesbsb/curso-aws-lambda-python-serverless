@@ -1,0 +1,1420 @@
+openapi: 3.0.2
+info:
+  version: 1.0.0
+  title: API de Movimentações
+  description: |
+    Recupera as movimentações de uma conta
+servers:
+  - url: https://api.btgpactual.com/iaas-api-operation
+paths:
+  /api/v1/operation-history/full/{accountNumber}:
+    get:
+      tags:
+        - get-movements-by-account-full
+      summary: "Recupera todas as movimentações de uma conta"
+      description: |
+        Endpoint responsável pela busca de todas as movimentações desde o início da conta. 
+
+        Após a requisição ser realizada com sucesso, os dados ficarão **estáticos por 12h**.  
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, 
+        que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Movimentações por conta (operations-by-account)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      parameters:
+        - name: fetch_current_account
+          description: |
+            Flag para trazer informações de Conta Corrente (Por default este valor é "true"). 
+            Deve ser passado no Headers apenas quando quiser passar "true", caso contrário não deve ser informado.
+
+            Exemplo: `no_value`
+          schema:
+            type: string
+          in: header
+          required: false
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta para buscar resumo da posição.
+            
+            Example: `001234567`
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        "202":
+          description: Accepted
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message:
+                            "access_token: The Token has expired on Wed Jul 28\
+                            \ 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não encontrado:
+                  value:
+                    timestamp: 2021-07-28T12:41:31.887+00:00
+                    status: 404
+                    error: Not Found
+                    message: ""
+                Posição não encontrada:
+                  value:
+                    errors:
+                      - code: 404
+                        message: There is no operation file for account
+          description:
+            "Não encontrado, caso url do enpoint seja inválida , ou nã\
+            o exista posição para o parceiro informado"
+        "400":
+          content:
+            application/json:
+              examples:
+                Erro de Validação:
+                  value:
+                    status: 400
+                    title: errors.validation
+                    meta:
+                      globalErrors:
+                        - code:
+                            "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                            \ - request:idPartnerRequest:9659] is already been being\
+                            \ processed"
+                          message:
+                            "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                            \ - request:idPartnerRequest:9659] is already been being\
+                            \ processed"
+          description: Requisição com erro de validação
+  /api/v1/operation-history/monthly/{accountNumber}:
+    get:
+      tags:
+        - get-movements-by-account-monthly
+      summary: "Recupera as movimentações da conta no último mês mais o mês corrente"
+      description: |
+        **Este relatório pode trazer até D-60, dependendo do dia da solicitação.**
+
+        Endpoint responsável pela busca de movimentações de uma conta, considerando o mês anterior completo mais os dias do mês corrente.
+
+        ***Exemplo:***
+
+        Chamando o endpoint no dia 12/03/2025, as datas inicial e final serão, respectivamente, "2025-02-01" e "2025-03-12".
+        Havendo movimentações neste período, o arquivo será gerado e a mensagem para recuperação do relatório será entregue via webhook.
+
+        Após a requisição ser realizada com sucesso, os dados ficarão **estáticos por 12h**. 
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Movimentações por conta (operations-by-account)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: Mês anterior ao corrente + dias do mês corrente
+      parameters:
+        - name: fetch_current_account
+          description: |
+            Flag para trazer informações de Conta Corrente (Por default este valor é "true"). 
+            Deve ser passado no Headers apenas quando quiser passar "true", caso contrário não deve ser informado.
+
+            Exemplo: `no_value`
+          schema:
+            type: string
+          in: header
+          required: false
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta para buscar resumo da posição.
+            
+            Example: `001234567`
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        "202":
+          description: Accepted
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message:
+                            "access_token: The Token has expired on Wed Jul 28\
+                            \ 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não encontrado:
+                  value:
+                    timestamp: 2021-07-28T12:41:31.887+00:00
+                    status: 404
+                    error: Not Found
+                    message: ""
+                Posição não encontrada:
+                  value:
+                    errors:
+                      - code: 404
+                        message: There is no operation file for account
+          description:
+            "Não encontrado, caso url do enpoint seja inválida , ou nã\
+            o exista posição para o parceiro informado"
+        "400":
+          content:
+            application/json:
+              examples:
+                Erro de Validação:
+                  value:
+                    status: 400
+                    title: errors.validation
+                    meta:
+                      globalErrors:
+                        - code:
+                            "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                            \ - request:idPartnerRequest:9659] is already been being\
+                            \ processed"
+                          message:
+                            "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                            \ - request:idPartnerRequest:9659] is already been being\
+                            \ processed"
+          description: Requisição com erro de validação
+  /api/v1/operation-history/weekly/{accountNumber}:
+    get:
+      tags:
+        - get-movements-by-account-weekly
+      summary: "Recupera as movimentações de uma conta nos últimos 7 dias"
+      description: |
+        Endpoint responsável pela busca de movimentações de uma conta nos últimos 7 dias. 
+
+        Após a requisição ser realizada com sucesso, os dados ficarão **estáticos por 12h**. 
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, 
+        que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Movimentações por conta (operations-by-account)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: D-7 até D0
+      parameters:
+        - name: fetch_current_account
+          description: |
+            Flag para trazer informações de Conta Corrente (Por default este valor é "true"). 
+            Deve ser passado no Headers apenas quando quiser passar "true", caso contrário não deve ser informado.
+
+            Exemplo: `no_value`
+          schema:
+            type: string
+          in: header
+          required: false
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta para buscar resumo da posição.
+            
+            Example: `001234567`
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        "202":
+          description: Accepted
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message:
+                            "access_token: The Token has expired on Wed Jul 28\
+                            \ 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não encontrado:
+                  value:
+                    timestamp: 2021-07-28T12:41:31.887+00:00
+                    status: 404
+                    error: Not Found
+                    message: ""
+                Posição não encontrada:
+                  value:
+                    errors:
+                      - code: 404
+                        message: There is no operation file for account
+          description:
+            "Não encontrado, caso url do enpoint seja inválida , ou nã\
+            o exista posição para o parceiro informado"
+        "400":
+          content:
+            application/json:
+              examples:
+                Erro de Validação:
+                  value:
+                    status: 400
+                    title: errors.validation
+                    meta:
+                      globalErrors:
+                        - code:
+                            "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                            \ - request:idPartnerRequest:9659] is already been being\
+                            \ processed"
+                          message:
+                            "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                            \ - request:idPartnerRequest:9659] is already been being\
+                            \ processed"
+          description: Requisição com erro de validação
+  /api/v1/operation-history/period:
+    post:
+      tags:
+        - post-movements-by-partner-and-period
+      summary: "Solicita as movimentações de todas as contas do parceiro por um período"
+      description: |
+        Endpoint responsável pela busca de movimentações de todas as contas, por escritório e período. 
+        O formato esperado é ano-mês (yyyy-MM) e a busca será feita para o mês completo (do primeiro dia do mês, até o último), considerando o limite da janela de dados permitida,
+         onde o **período precisa ser anterior ao primeiro dia do mês anterior ao mês corrente.**
+
+        ***Exemplo 1:***
+
+        Chamando o endpoint no dia 12/03/2025, informando o período "2025-02".
+        Será enviada uma mensagem via webhook informando que o período é inválido porque não foi respeitado o limite da janela de dados.
+
+        ***Exemplo 2:***
+
+        Chamando o endpoint no dia 12/03/2025, informando o período "2025-01", as datas inicial e final serão, respectivamente, "2025-01-01" e "2025-01-31".
+        Havendo movimentações neste período, o arquivo será gerado e a mensagem para recuperação do relatório será entregue via webhook.
+
+        **Não inclui contas de tipo Fundos, apenas contas tipo Investimento**
+
+        Após a requisição ser realizada com sucesso, os dados ficarão **estáticos por 12h**. 
+        Caso realize uma nova chamada com um novo período, será gerado um novo relatório sem sobrescrever o anterior ainda válido.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, 
+        que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Movimentações por Parceiro (operations-by-partner)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+         
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: D-x até o mês anterior ao corrente
+      parameters:
+        - name: fetch_current_account
+          description: |
+            Flag para trazer informações de Conta Corrente (Por default este valor é "true"). 
+            Deve ser passado no Headers apenas quando quiser passar "true", caso contrário não deve ser informado.
+
+            Exemplo: `no_value`
+          schema:
+            type: string
+          in: header
+          required: false
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationHistoryPartner"
+      responses:
+        "202":
+          description: Accepted
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message:
+                            "access_token: The Token has expired on Wed Jul 28\
+                            \ 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não encontrado:
+                  value:
+                    timestamp: 2021-07-28T12:41:31.887+00:00
+                    status: 404
+                    error: Not Found
+                    message: ""
+                Posição não encontrada:
+                  value:
+                    errors:
+                      - code: 404
+                        message: There is no operation file for account
+          description: "Não encontrado, caso url do enpoint seja inválida , ou não existe retorno de operação para a conta ou o período informados"
+        "400":
+          content:
+            application/json:
+              examples:
+                Erro de Validação:
+                  value:
+                    status: 400
+                    title: errors.validation
+                    meta:
+                      globalErrors:
+                        - code:
+                            "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                            \ - request:idPartnerRequest:9659] is already been being\
+                            \ processed"
+                          message:
+                            "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                            \ - request:idPartnerRequest:9659] is already been being\
+                            \ processed"
+          description: Requisição com erro de validação
+  /api/v1/operation-history/monthly:
+    get:
+      tags:
+        - get-movements-by-partner-monthly
+      summary: "Solicita as movimentações de todas as contas do parceiro no último mês mais o mês corrente"
+      description: |
+        **Este relatório pode trazer até D-60, dependendo do dia da solicitação.**
+
+        Endpoint responsável pela busca de movimentações de todas as contas por escritório, considerando o mês anterior completo mais os dias do mês corrente.
+
+        ***Exemplo:***
+
+        Chamando o endpoint no dia 12/03/2025, as datas inicial e final serão, respectivamente, "2025-02-01" e "2025-03-12".
+        Havendo movimentações neste período, o arquivo será gerado e a mensagem para recuperação do relatório será entregue via webhook.
+
+        Após a requisição ser realizada com sucesso, os dados ficarão **estáticos por 12h**. 
+       
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, 
+        que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Movimentações por conta (operations-by-partner)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: Mês anterior ao corrente + dias do mês corrente
+      parameters:
+        - name: fetch_current_account
+          description: |
+            Flag para trazer informações de Conta Corrente (Por default este valor é "true"). 
+            Deve ser passado no Headers apenas quando quiser passar "true", caso contrário não deve ser informado.
+
+            Exemplo: `no_value`
+          schema:
+            type: string
+          in: header
+          required: false
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "202":
+          description: Accepted
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message:
+                            "access_token: The Token has expired on Wed Jul 28\
+                            \ 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não encontrado:
+                  value:
+                    timestamp: 2021-07-28T12:41:31.887+00:00
+                    status: 404
+                    error: Not Found
+                    message: ""
+                Posição não encontrada:
+                  value:
+                    errors:
+                      - code: 404
+                        message: There is no operation file for account
+          description:
+            "Não encontrado, caso url do enpoint seja inválida , ou nã\
+            o exista posição para o parceiro informado"
+        "400":
+          content:
+            application/json:
+              examples:
+                Erro de Validação:
+                  value:
+                    status: 400
+                    title: errors.validation
+                    meta:
+                      globalErrors:
+                        - code:
+                            "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                            \ - request:idPartnerRequest:9659] is already been being\
+                            \ processed"
+                          message:
+                            "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                            \ - request:idPartnerRequest:9659] is already been being\
+                            \ processed"
+          description: Requisição com erro de validação
+  /api/v1/operation-history/weekly:
+    get:
+      tags:
+        - get-movements-by-partner-weekly
+      summary: "Solicita as movimentações de todas as contas do parceiro nos últimos 7 dias"
+      description: |
+        Endpoint responsável pela busca de movimentações de todas as contas por escritório, considerando os últimos 7 dias. 
+
+        Após a requisição ser realizada com sucesso, os dados ficarão **estáticos por 12h**. 
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, 
+        que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Movimentações por conta (operations-by-partner)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: D-7 até D0
+      parameters:
+        - name: fetch_current_account
+          description: |
+            Flag para trazer informações de Conta Corrente (Por default este valor é "true"). 
+            Deve ser passado no Headers apenas quando quiser passar "true", caso contrário não deve ser informado.
+
+            Exemplo: `no_value`
+          schema:
+            type: string
+          in: header
+          required: false
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "202":
+          description: Accepted
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message:
+                            "access_token: The Token has expired on Wed Jul 28\
+                            \ 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não encontrado:
+                  value:
+                    timestamp: 2021-07-28T12:41:31.887+00:00
+                    status: 404
+                    error: Not Found
+                    message: ""
+                Posição não encontrada:
+                  value:
+                    errors:
+                      - code: 404
+                        message: There is no operation file for account
+          description:
+            "Não encontrado, caso url do enpoint seja inválida , ou nã\
+            o exista posição para o parceiro informado"
+        "400":
+          content:
+            application/json:
+              examples:
+                Erro de Validação:
+                  value:
+                    status: 400
+                    title: errors.validation
+                    meta:
+                      globalErrors:
+                        - code:
+                            "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                            \ - request:idPartnerRequest:9659] is already been being\
+                            \ processed"
+                          message:
+                            "The request [request:idPactual:1bf31486-f467-4ab6-a453-fd0420de8211\
+                            \ - request:idPartnerRequest:9659] is already been being\
+                            \ processed"
+          description: Requisição com erro de validação
+components:
+  schemas:
+    OperationRequest:
+      title: Request - Movimentações históricas por conta
+      type: object
+      properties:
+        startDate:
+          description: "Data inicial da pesquisa"
+          example: "2021-03-18"
+          pattern: "YYYY-MM-DD"
+          type: string
+        endDate:
+          description: "Data final da pesquisa"
+          example: "2021-03-19"
+          pattern: "YYYY-MM-DD"
+          type: string
+    OperationPartnerRequest:
+      title: Request - Movimentações por parceiro
+      type: object
+      properties:
+        date:
+          description: "Data que deseja consultar todas as movimentações"
+          example: "2022-08-19"
+          pattern: "YYYY-MM-DD"
+          type: string
+    RequestHistoryOperationsMarketAndAsset:
+      title: Request - Movimentações históricas por mercado e ativo
+      description: Exemplo de Payload passado no body da requisição
+      required:
+        - asset
+        - assetCode
+        - marketName
+        - subMarketName
+      type: object
+      properties:
+        marketName:
+          type: string
+          description: Nome do mercado (Campo Obrigatório)
+          example: RF
+        subMarketName:
+          type: string
+          description: Nome do subMercado (Campo Obrigatório)
+          example: COE
+        asset:
+          type: string
+          description: Ativo (Campo Obrigatório)
+          example: ITUB3
+        assetCode:
+          type: string
+          description: Código do Ativo
+          example: "4513708"
+        startDate:
+          type: string
+          description: Data de ínicio do período desejado (yyyy-MM-dd)
+          format: string
+          example: "2022-01-01"
+        endDate:
+          type: string
+          description: Date de final do período desejado (yyyy-MM-dd)
+          format: string
+          example: "2022-01-30"
+    ResponseError:
+      description: Exemplo de payload de retorno em casos de erro
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: "#/components/schemas/ErrorMetadata"
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    OperationHistoryPartner:
+      title: Payload para busca de Movimentações históricas por escritório e período.
+      type: object
+      properties:
+        monthRef:
+          description: Mês de referência para busca de movimentações.
+          example: "2024-12"
+          pattern: "yyyy-MM"
+          type: string
+    ExampleResponse:
+      title: Exemplo de Retorno - Movimentações
+      description: |
+        Dicionário de dados - API de Movimentações
+
+        Este é o dicionário de dados com os possíveis valores de retorno.
+        O arquivo final terá formato .CSV com os seguintes campos:
+
+        ---
+      properties:
+        accountNumber:
+          type: string
+          description: Número da conta
+          example: "001234567"
+        marketName:
+          type: string
+          description: |
+            Nome do Mercado
+
+            values:
+              - RV
+              - RF
+              - FUNDOS
+              - CRY
+              - DERIVATIVOS
+              - CC
+              - PREV
+          example: "FUNDOS"
+        subMarketName:
+          type: string
+          description: |
+            Nome do Submercado
+
+            values:
+              - NDF
+              - CC
+              - COE
+              - FUNDOS
+              - TERMO
+              - PREVIDENCIA
+              - RF
+              - OPCAO_FLEXIVEL
+              - COMMODITIES
+              - FUTUROS
+              - OPCOES
+              - OPCOES_BMF
+              - ACOES
+              - ALUGUEL_ACOES
+              - CRY
+          example: "FUNDOS"
+        interfaceDate:
+          type: string
+          description: Data em que a movimentação foi registrada
+          example: "2019-05-03 00:00:00"
+          pattern: "yyyy-MM-dd 00:00:00"
+        asset:
+          type: string
+          description: Nome do Ativo
+          example: ABCD2
+        fundCnpj:
+          type: string
+          description: CNPJ do fundo
+          example: 1234567000123
+        movementDate:
+          type: string
+          description: Data em que ocorreu a movimentação
+          example: "2019-05-03 00:00:00"
+          pattern: "yyyy-MM-dd 00:00:00"
+        movementHistory:
+          type: string
+          description: |
+            Descrição da movimentação. Por se tratar de um campo dinâmico, não existe padrão
+
+            Example values: 
+            - LIQ BOLSA (CREDITO MARGEM EM DINHEIRO RETIRADA)
+            - 001234567 - Liquidação Operações de Bolsa
+            - DEPOSITO EM C/C VIA CIP - JOSE DA SILVA
+        launchType:
+          type: string
+          description: |
+            Tipo de movimentação
+
+            values:
+              - ACERTO INCORPORAÇÃO
+              - ACERTO SUBSCRIÇÃO
+              - AJUSTE BOLSA CARTEIRA
+              - Ajuste de Recotização
+              - AJUSTE DE RENTABILIDADE
+              - AJUSTE VCTO. COMPRA TERMO
+              - Alteração de Administrador - entrada
+              - Alteração de Administrador - saída
+              - Alteração de cadastro de conta - ENTRADA
+              - Alteração de cadastro de conta - SAÍDA
+              - ALTERACAO DO CADASTRO DE PREVIDÊNCIA EXTERNA(Entrada)
+              - ALTERACAO DO CADASTRO DE PREVIDÊNCIA EXTERNA(Saida
+              - ALTERACAO DO CADASTRO DE PREVIDÊNCIA EXTERNA(Saida)
+              - AM
+                - AM: Amortização
+              - AMORTIZAÇÃO
+              - AMORTIZAÇÃO RF
+              - Aporte
+              - AQ
+                - AQ: Aplicação
+              - BD
+                - BD: Empréstimo Doador com Bonificação
+              - BLOQUEIO
+              - BO
+                - BO: Bonificação
+              - BONIFICACAO
+              - BONIFICACAO/SPLIT
+              - BT
+                - BT: Empréstimo Tomador com Bonificação
+              - CANC. COMPRA DEFINITIVA
+              - CANC. TRANSF. EXTERNA SAIDA
+              - CANC.AMORTIZAÇÃO
+              - CANC.COMPRA COM REVENDA
+              - CANC.COMPRA DEFINITIVA
+              - CANC.DEPÓSITO DE CUSTÓDIA
+              - CANC.JUROS
+              - CANC.PAGAMENTO DE PRÊMIO
+              - CANC.RETIRADA DE CUSTÓDIA
+              - CANC.REVENDA
+              - CANC.VENCIMENTO DE TÍTULO
+              - CANC.VENDA DEFINITIVA
+              - CANCELA RESGATE EFETIVADO
+              - CANCELAMENTO DE APLICACAO
+              - Carregamento
+              - CAUÇÃO EM GARANTIA
+              - COBERTURA
+              - COMPRA
+              - COMPRA C/ REVENDA
+              - COMPRA COM REVENDA
+              - COMPRA DE CDB/RDB PACTUAL
+              - COMPRA DE COE
+              - COMPRA DE DPGE_S
+              - COMPRA DE LCA
+              - COMPRA DE LCA-ACC
+              - COMPRA DE LCI
+              - COMPRA DE LF
+              - COMPRA DE LF-DI
+              - COMPRA DE LFSN
+              - COMPRA DE RENDA
+              - COMPRA DEFINITIVA
+              - Concessão de Benefício-Venda de Cotas
+              - Contribuição
+              - CONTRIBUICAO - APLICACAO
+              - CONVERSÃO
+              - CPA.C/REVENDA S
+              - CRÉDITO
+              - Crédito de Lucro para a EAPC
+              - DÉBITO
+              - Débito de Prejuizo para a EAPC
+              - Deposito
+              - DEPÓSITO
+              - DEPÓSITO DE CUSTÓDIA
+              - DEPOSITO DO CLIENTE
+              - DESBLOQUEIO
+              - DESVINCULAÇÃO DE CAUÇÃO EM GARANTIA
+              - DEVOLUCAO DE PREMIO PAGO
+              - Devolucao de Titulos Acatados
+              - DIREITO SUBSCRICAO
+              - DISPONÍVEL
+              - ED
+                - ED: Empréstimo Doador
+              - EMISSÃO COMPRA
+              - EMISSÃO VENDA
+              - EMPRESTIMO
+              - ESTORNO DE APLICACAO INDEVIDA
+              - Estorno de Cobrança
+              - Estorno de Resgate Parcial
+              - Estorno de Resgate Total
+              - Estorno de Transferência de Entrada
+              - Estorno de Transferência de Entrada S/G Financeira
+              - Estorno de Transferência de Saída Total
+              - Estorno de Transferência de Saída Total S/G Financeira
+              - Estorno Portab.Saída Parcial
+              - Estorno Portab.Saída Total
+              - Estorno Portabilidade de Entrada
+              - ET
+                - ET: Empréstimo Tomador
+              - EVENTO
+              - EVENTO DE BOLSA
+              - EXERCICIO
+              - Exercício de Opção
+              - EXERCICIO OPCAO
+              - EXERCICIO OPÇÃO DE C
+              - EXERCICIO OPÇÃO DE COMPRA
+              - EXERCICIO OPÇÃO DE V
+              - EXERCICIO OPÇÃO DE VENDA
+              - EXERCICIO SUBSCRICAO
+              - GR
+                - GR: INPLIT
+              - GRUPAMENTO (INPLIT)
+              - INCLUSÃO DO CADASTRO DE PREVIDÊNCIA EXTERNA
+              - INDEFINIDA
+              - INPLIT
+              - JUROS
+              - JUROS S/CAPITAL
+              - LD
+                - LD: Liquidação Empréstimo Doador
+              - LIQ. ANTECIPADA PARCIAL
+              - LIQ. ANTECIPADA TOTAL
+              - LIQ. COMPRA TERMO
+              - LIQ. VENDA TERMO
+              - LIQUIDACAO EMPRESTIMO
+              - LT
+                - LT: Liquidação Empréstimo Tomador
+              - MUDANCA DE FUNDO - ENTRADA
+              - MUDANCA DE FUNDO - SAIDA
+              - OPERACAO INTERNA-INIBIR NO CRS
+              - OUTROS EVENTOS
+              - Pagamento Saldo Reserva por óbito-VENDE COTAS
+              - Penalidades no Vesting
+              - Penalidades no Vesting S/G
+              - Pó de Opção
+              - Portab. Saída Parcial
+              - Portab. Saída Total
+              - Portabilidade de Entrada
+              - Portabilidade de Saída Parcial Reais
+              - PRODUTO CA DE ATIVO NAO-BTG
+              - RDA.AL.FIN./POS
+              - RE
+                - RE: Resgate
+              - REC S PR AN
+              - REC SEL ALU AN
+              - RECEBIMENTO DIVIDENDOS
+              - RECOMPRA
+              - REGISTRO NDF
+              - REMOÇÃO DO CADASTRO DE PREVIDÊNCIA EXTERNA
+              - RENDIMENTO
+              - RENOVACAO EMPRESTIMO
+              - RENVENDA
+              - RESGATE
+              - Resgate Parcial
+              - Resgate Parcial em Reais
+              - RESGATE TIT PUBL CLIENTE CAUCAO
+              - Resgate Total
+              - RESTITUIÇÃO DE CAPITAL
+              - RETIRADA
+              - RETIRADA DE CUSTÓDIA
+              - RETIRADA DO CLIENTE
+              - RetiradaCotas
+              - REVENDA
+              - RI / RS
+                - RI: Resgate IR referente aplicação
+                - RS: Resgate IR referente aplicação
+              - RT
+                - RT: Resgate Total / Retirada
+              - SPLIT
+              - TA
+                - TA: Depósito de Cotas e Tributos Provisionados
+              - TAXA DE CUSTÓDIA
+              - TAXA DE CUSTODIA/CUPOM
+              - TR
+                - TR: Retirada de Cotas
+              - TRANSF TIT DEB
+              - TRANSF. ALUPROP
+              - TRANSF. BANCO ESCRITURADOR
+              - Transferência de Custódia
+              - Transferência de depósito
+              - Transferencia de Entrada mesmo Fundo
+              - Transferencia de Entrada mesmo Fundo Reais
+              - Transferência de retirada
+              - Transferência de Saída Parcial sem Gestão Financeira
+              - Transferência de Saída Parcial sem Gestão Financeira Reais
+              - Transferência de Saída Total sem Gestão Financeira
+              - TRANSFERENCIA EXTERNA - SAIDA
+              - TRANSFERENCIA EXTERNA -ENTRADA
+              - Transferencia Interna de Entrada
+              - Transferência Interna de Saída Parcial
+              - Transferência Interna de Saída Parcial Reais
+              - Transferência Interna de Saída Total
+              - TROCA DE NOME
+              - TRSF ALU INT DB
+              - UNIFICACAO  RESERVA ENTRADA
+              - UNIFICACAO  RESERVA SAIDA
+              - VC / VT
+                - VC: Vencimento de Empréstimo
+                - VT: Vencimento de Empréstimo
+              - VCTO. COMPRA TERMO
+              - VCTO. VENDA TERMO
+              - VDA C/ REC ALUG
+              - VDA RECPA PR LM
+              - VDA.C/RECPA.PR.
+              - VENC. TERMO
+              - VENCIMENTO
+              - VENCIMENTO DA OPCAO
+              - VENCIMENTO DE FUTURO
+              - VENCIMENTO DE TÍTULO
+              - VENCIMENTO DO DIREITO DE SUBSC
+              - VENCIMENTO EMPRESTIMO
+              - VENCIMENTO NDF
+              - Venda
+              - VENDA COM RECOMPRA
+              - VENDA DEFINITIVA
+              - Vesting Desligamento(Entrada)
+              - Vesting Desligamento(Entrada) S/G
+              - Vesting Desligamento(Saída)
+              - Vesting Desligamento(Saída) S/G
+              - Zeragem de posição (depósito)
+              - Zeragem de posição (retirada)
+          example: AMORTIZAÇÃO
+        grossValue:
+          type: string
+          description: Valor bruto (compra + taxa)
+          example: 85144.0
+        irValue:
+          type: string
+          description: Valor do IR
+          example: 40.56
+        iofValue:
+          type: string
+          description: Valor do IOF
+          example: 16.25
+        quantity:
+          type: string
+          description: Quantidade de papéis
+          example: "73.0"
+        price:
+          type: string
+          description: Preço do papél
+          example: 1078.52673
+        brokerageFees:
+          type: string
+          description: Taxas de Corretagem
+          example: -2.72
+        optionType:
+          type: string
+          description: |
+            Tipo de Opção
+
+            values:
+              - Put
+              - Call
+          example: Put
+        exerciseDate:
+          type: string
+          description: Data de exercício
+          example: "2020-12-21 00:00:00"
+          pattern: "yyyy-MM-dd 00:00:00"
+        premium:
+          type: string
+          description: Preço unitário no dia da compra
+          example: 928.5
+        premiumValue:
+          type: string
+          description: Valor bruto da compra (sem desconto de IOF e IRR)
+          example: 928.5
+        dueDate:
+          type: string
+          description: Data de vencimento
+          example: "2020-12-21 00:00:00"
+          pattern: "yyyy-MM-dd 00:00:00"
+        issueDate:
+          type: string
+          description: Data de emissão
+          example: "2018-12-21 00:00:00"
+          pattern: "yyyy-MM-dd 00:00:00"
+        index:
+          type: string
+          description: |
+            Indexador. Podendo ser conta ou Índice
+
+            values:
+              - 001234567
+              - IPCA
+          example: IPCA
+        fee:
+          type: string
+          description: Rendimento/Taxa anual em porcentagem
+          example: 5.23
+        issuer:
+          type: string
+          description: Emissor
+          example: BANCO BTG Pactual
+        accountingGroupCode:
+          type: string
+          description: |
+            Código do grupo de contabilidade
+
+            values:
+              - CBIO
+              - CCB
+              - CCI
+              - CDB
+              - CDBS
+              - CDBV
+              - CDBV-DI
+              - CDCA
+              - CDI
+              - CDP
+              - CFA
+              - COE
+              - Compromissada ABCD2 * (Compromissada { Ativo } *)
+              - CRA
+              - CRI
+              - CVS
+              - DEB
+              - Debênture
+              - DI
+              - DPGE
+              - DPGE_S
+              - LAM
+              - LC
+              - LCA
+              - LCA-ACC
+              - LCI
+              - LF
+              - LFS
+              - LFSC
+              - LFSN
+              - LFT
+              - LH
+              - LIG
+              - LTN
+              - NC
+              - NOTA
+              - NTNA3
+              - NTNB
+              - NTN-B
+              - NTNB-P
+              - NTNC
+              - NTN-C
+              - NTNF
+              - NTN-F
+              - NTNF-P
+              - RDB
+              - RDB DPGE
+              - TESOURO DIRETO - LFT
+              - TESOURO DIRETO - LTN
+              - TESOURO DIRETO - NTNB
+              - TESOURO DIRETO - NTN-B
+              - TESOURO DIRETO - NTN-B1
+              - TESOURO DIRETO - NTNB-P
+              - TESOURO DIRETO - NTNC
+              - TESOURO DIRETO - NTN-C
+              - TESOURO DIRETO - NTNF
+              - TESOURO DIRETO - NTN-F
+          example: CDB
+        type:
+          type: string
+          description: |
+            Tipo de Operação
+
+            values:
+              - DOADOR (Indica que o aluguel da ação foi cedido)
+
+              - TOMADOR (Indica que o aluguel da ação foi tomado (contraparte))
+
+              - Moeda (Indica o tipo de unidade representativa de valor da Operação)
+
+              - Put (Derivativo que dá a opção de vender as ações pelo preço estipulado durante a compra da opção, ainda que os títulos venham a se desvalorizar)
+              
+              - Call (Indica o direito de comprar uma ação pelo preço de contrato inscrito no momento do acordo firmado)
+
+              - Indefinido
+          example: DOADOR
+        assetCode:
+          type: string
+          description: Código do Ativo
+          example: 1234567
+        buyDate:
+          type: string
+          description: Data da compra
+          example: "2018-12-21 00:00:00"
+          pattern: "yyyy-MM-dd 00:00:00"
+        stockOperation:
+          type: string
+          description: |
+            Operação
+
+            values:
+              - B (Vencimento do direito de Subscrição)
+              - C (Compra/Depósito)
+              - D (Direito de Subscrição)
+              - I (INPLIT/Grupamento)
+              - N (TROCA DE NOME)
+              - S (Exercício de Subscrição)
+              - T (Retirada)
+              - V (Venda)
+              - Undefined
+          example: V
+        settlementDate:
+          type: string
+          description: Data de liquidação
+          example: "2019-05-03 00:00:00"
+          pattern: "yyyy-MM-dd 00:00:00"
+        description:
+          type: string
+          description: Descrição adicional
+        buyFee:
+          type: string
+          description: Taxa de compra
+          example: 1.0
+        pensionType:
+          type: string
+          description: |
+            Tipo de previdência
+
+            values:
+              - VGBL
+              - PGBL
+          example: VGBL

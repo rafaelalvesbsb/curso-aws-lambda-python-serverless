@@ -1,0 +1,192 @@
+openapi: 3.0.3
+info:
+  version: 1.0.0
+  title: API de consulta de Debêntures
+  description: |
+    API responsável pelo intermédio das consultas de debêntures do mercado financeiro, fornecidas pela ANBIMA.
+servers:
+  - url: https://api.btgpactual.com/iaas-debenture
+
+paths:
+  /api/v1/debenture:
+    get:
+      tags:
+        - get-debenture-by-date
+      summary: Busca de debentures por data de referência
+      description: |
+        Recupera as debentures da Anbima através de uma data de referência
+
+        Os dados são sempre D-1 e são considerados apenas dias úteis.
+
+        Para realizar a consulta é necessário informar uma data de referência.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real 
+
+        Janela de dados: Até D-1
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: referenceDate
+          description: |
+            Data de Referência para busca das debentures (yyyy-MM-dd).
+
+            *Exemplo:* `2021-11-18`
+          schema:
+            type: string
+          in: query
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                $ref: "#/components/schemas/Debenture"
+          description: Successful response
+          headers:
+            x-id-pactual:
+              schema:
+                type: string
+                example: 2ffb9cfb-8dae-4956-b8d9-8d04ff5823ee
+              description: Identificador único da requisição
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message: "access_token: The Token has expired on Wed Jul 28 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 404
+                    title: Not Found
+                    meta:
+                      globalErrors:
+                        - code: Not Found
+                          message: "Não há valores publicados para esta data"
+          description: Não há valores publicados para esta data
+      operationId: getDebenture
+components:
+  schemas:
+    Debenture:
+      description: Lista de dados à serem recuperados pela API que expõe as debentures da Anbima
+      type: array
+      items:
+        properties:
+          grupo:
+            description: Grupo
+            type: string
+            example: "DI Percentual"
+            minLength: 0
+            maxLength: 50
+          codigo_ativo:
+            description: Código Ativo
+            type: string
+            example: "AESL14"
+            minLength: 0
+            maxLength: 6
+          data_referencia:
+            description: Data de referência(utilizada para o filtro desta consulta)
+            type: string
+            example: "2011-11-18"
+          data_vencimento:
+            description: Data de Vencimento
+            type: string
+            example: "2022-10-20"
+          percentual_taxa:
+            description: Percentual da Taxa
+            type: string
+            example: "120,5% do DI"
+            minLength: 0
+            maxLength: 50
+          taxa_compra:
+            description: Taxa de compra
+            type: number
+            example: 111.23
+          taxa_venda:
+            description: Taxa de venda
+            type: number
+            example: 107.12
+          taxa_indicativa:
+            description: Taxa Indicativa
+            type: number
+            example: 108.1234
+          desvio_padrao:
+            description: Desvio Padrão
+            type: number
+            example: 0.01
+          val_min_intervalo:
+            description: Valor Mínimo
+            type: number
+            example: 1010.45
+          val_max_intervalo:
+            description: Valor Máximo
+            type: number
+            example: 1010.52
+          pu:
+            description: Preço Unitário
+            type: number
+            example: 100000.939090
+          percent_pu_par:
+            description: Percentual Preço Unitário
+            type: number
+            example: 100.90
+          duration:
+            description: Duração
+            type: number
+            example: 570
+          percent_renue:
+            description: Percentual Reune
+            type: string
+            example: "--"
+          emissor:
+            description: Emissor
+            type: string
+            example: "AES **"
+            minLength: 0
+            maxLength: 100

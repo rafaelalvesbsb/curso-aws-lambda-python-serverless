@@ -1,0 +1,18 @@
+[tool.uv.workspace]
+members = [
+    "python_libraries/btg",
+    "python_libraries/hubspot",
+    "python_libraries/aws",
+    "python_libraries/database",
+    "agf-data-pipeline",
+]
+
+# Limit resolution to current platform only
+[tool.uv]
+environments = ["sys_platform == 'darwin'"]  # Mac only
+
+# Shared dev dependencies across workspace
+[tool.uv.sources]
+
+# Optional: workspace-level dev dependencies
+# Install with: uv sync --dev

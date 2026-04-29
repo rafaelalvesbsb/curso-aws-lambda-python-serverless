@@ -1,0 +1,1110 @@
+openapi: 3.0.1
+info:
+  title: "API de Informação de candidatos"
+  description: API de consulta de relatorio de Informação de candidatos
+  version: 3.1.2.0
+servers:
+  - url: https://api.btgpactual.com/api-partner-report-hub
+paths:
+  /api/v1/report/onboarding:
+    get:
+      tags:
+        - get-report-onboarding-by-partner
+      summary: Buscar informações de candidatos por parceiro
+      description: |
+        Endpoint responsável pela busca de informações pessoais e profissionais dos candidatos, status e progresso do processo de integração destes, auxiliando no recrutamento dos Parceiros BTG.
+
+        Obs: Os dados fornecidos por este relatório são somente referentes a onboardings realizados pelo candidato através do App ou Web.
+
+        ***Uma vez solicitado, os dados informados permanecerão estáticos pelas próximas 3 horas.***
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de dados de Onboarding (partner-report-hub)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: A cada 3h
+
+        Janela de dados: D-1 a D0
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        "202":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              schema:
+                type: string
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner
+          description: "Erro interno, o administrador da API deverá ser informado."
+  /api/v1/report/onboarding-by-date:
+    post:
+      tags:
+        - post-report-onboarding-by-partner-and-period
+      summary: Buscar informações de candidatos por parceiro e data
+      description: |
+        Endpoint responsável pela busca de informações pessoais e profissionais dos candidatos, status e progresso do processo de integração destes, auxiliando no recrutamento dos Parceiros BTG.
+
+        Obs: Os dados fornecidos por este relatório são somente referentes a onboardings realizados pelo candidato através do App ou Web.
+
+        ***Uma vez solicitado, os dados informados permanecerão estáticos por uma semana (7 dias)***
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de dados de Onboarding (partner-report-hub)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: N/A *(Não se Aplica)*
+
+        Janela de dados: D-30 a D0 (Período menor ou igual a 30 dias)
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OnboardingRequest"
+      responses:
+        "202":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              schema:
+                type: string
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner
+          description: "Erro interno, o administrador da API deverá ser informado."
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: "#/components/schemas/ErrorMetadata"
+    OnboardingRequest:
+      type: object
+      properties:
+        startDate:
+          description: "Data inicial da pesquisa"
+          example: "2023-01-15"
+          pattern: "YYYY-MM-DD"
+          type: string
+        endDate:
+          description: "Data final da pesquisa"
+          example: "2023-02-14"
+          pattern: "YYYY-MM-DD"
+          type: string
+    ExampleResponse:
+      description: |
+        Dicionário de dados - API de Onboarding
+
+        Este é o dicionário de dados com os possíveis valores de retorno.
+        O arquivo final terá formato .CSV com os seguintes campos:
+
+        ---
+      properties:
+        cod_file:
+          description: ID atribuído ao arquivo
+          type: string
+          example: "e705277d-8983-48a4-bc0a-94210f7c2039-2023-02-12-05"
+        candidate_id:
+          type: string
+          description: Código do candidato
+          example: 1234567
+        name:
+          type: string
+          description: Nome do candidato
+          example: "Maria José da Silva"
+        email:
+          type: string
+          description: Email informado pelo candidato
+          example: "maria.jose01@gmail.com"
+        hash_email:
+          type: string
+          description: Hash SHA256 do email do candidato
+          example: 7527EE1DC07D8DEF0BDC25E450715089DCD373AB4CEDEECD81B3E59F8B
+        cpf:
+          type: string
+          description: CPF do candidato
+          example: 11122233344
+        hash_cpf:
+          type: string
+          description: Hash 256 do CPF do candidato
+          example: "BFD12A3E9E9870AF696AF57EFA5F1519109CB83F441CE9ED39442B3"
+        phone:
+          type: string
+          description: Telefone informado pelo candidato
+          example: 11988881234
+        cge:
+          type: string
+          description: CGE (Cadastro Geral de Empregados) atribuído ao candidato
+          example: 123456
+        cod_login:
+          type: string
+          description: Código para uso de marketing atribuído ao candidato
+          example: 12345678
+        segment:
+          type: string
+          description: |
+            Segmento da conta criada
+
+            values:
+              - IB
+              - DRU
+              - mynt
+              - GRP
+              - WM
+              - AM
+              - BRK
+          example: "IB"
+        co_segment:
+          type: string
+          description: |
+            Cosegmento da conta criada
+
+            values:
+              - CP
+              - GS
+              - AD
+              - CF
+              - PM
+              - CC
+              - BN
+              - DA
+              - AA
+              - PR
+              - PC
+          example: "DA"
+        cge_officer:
+          type: string
+          description: Número CGE (Cadastro Geral de Empregados) do officer da conta (caso seja conta B2B)
+          example: 123456
+        cge_partner:
+          type: string
+          description: Número CGE (Cadastro Geral de Empregados) do parceiro B2B associado ao candidato
+          example: 123456
+        status:
+          type: string
+          description: |
+            Status atual da esteira de onboarding
+
+            values:
+              - Em Analise Onboarding
+              - Reprovado
+              - Aprovado
+              - Ação Requerida
+              - Cancelado
+              - Análise Iniciada
+              - Ação Requerida em Andamento
+              - Acao Requerida
+              - Em Analise Fraude
+              - Em análise de AML
+              - Confirmando Dados
+              - Em análise de Onboarding
+              - Cadastro Concluido
+              - Acao Requerida em Andamento
+              - Convite enviado para não cliente
+              - Conta Ativa
+              - Cadastro em andamento
+              - Cadastro em Andamento
+              - Em Confirmacao de Dados
+              - Cadastro Iniciado
+              - Cadastro Concluído
+              - Em Analise AML
+              - Analise Iniciada
+          example: "Cadastro em Andamento"
+        sg_status:
+          type: string
+          description: |
+            Sigla do status atual da esteira de onboarding
+
+            values:
+              - cadastro_em_andamento
+              - em_confirmacao_de_dados
+              - em_analise_onboarding
+              - cadastro_concluido
+              - aprovado
+              - em_analise_aml
+              - reprovado
+              - cadastro_iniciado
+              - conta_ativa
+              - acao_requerida_em_andamento
+              - analise_iniciada
+              - acao_requerida
+              - em_analise_fraude
+              - cancelado
+              - convite_enviado_nao_cliente
+          example: "cadastro_em_andamento"
+        form_name:
+          type: string
+          description: |
+            Tipo de Formulário 
+
+            values:
+              - Pessoa física individual
+              - Formulario Adicionar Representante
+              - Formulario Cobranded
+              - Formulario FOPA
+              - Pessoa Fisica Individual
+              - Formulario Criptomoeda
+          example: "Pessoa Fisica Individual"
+        account_number:
+          type: string
+          description: Número da conta criada
+          example: 1234567
+        dt_created:
+          type: string
+          description: Data do início da esteira de onboarding
+          example: "2023-02-12 02:39:31.000"
+        dt_updated:
+          type: string
+          description: Data do início da etapa da tela e status do registro
+          example: "2023-02-12 02:41:34.000"
+        dt_opening_account:
+          type: string
+          description: A data da abertura de conta (não funcional)
+          example: "2023-04-12 06:49:24.881"
+        scr:
+          type: string
+          description: |
+            Flag indicando se o dado veio a partir de uma tela do app 
+
+            values:
+              - true
+              - false
+          example: "true"
+        last_screen:
+          type: string
+          description: |
+            Tela anterior ao registro
+
+            values:
+              - screenAddRepresentativeWaitResponse
+              - screenWelcome
+              - screenFopaMaritalStatus
+              - screenFopaCountry
+              - screenSpouseNameComplet
+              - screenMyntTerms
+              - screenAddRepresentativeBirthDate
+              - screenFopaRecap
+              - screenRequiredAction
+              - screenLinkAccount
+              - screenAddRepresentativeConfirmValues
+              - screenFopaNameSpouseComplet
+              - screenFinancialResponsibleMinorAge
+              - screenPatrimony
+              - screenWithoutFiscalNumberIdentification
+              - screenDocumentTutorial
+              - screenPublicOfficesFinancialResponsible
+              - screenCobrandedDocument
+              - screenCobrandedWaitResponse
+              - screenEmail
+              - screenFopaDocument
+              - screenOfficerSelection
+              - screenTermsWm
+              - screenDocumentUpload
+              - screenFopaAddress
+              - screenSpouseCPF
+              - screenOfficerAuthorizationUnicred
+              - screenNationality
+              - screenStateBirth
+              - screenMassifyReviewData
+              - screenOfficerInvitation
+              - screenAddress
+              - screenFopaNameComplet
+              - screenFopaInformInvestmentOffice
+              - screenFopaPhone
+              - screenFatcaNationalityManagement
+              - screenFatcaWarningReview
+              - screenUploadBirthCertificate
+              - screenTerms
+              - screenStateBirthNoCountry
+              - screenJustificationGenerationW8
+              - screenUploadWeddingCertificate
+              - screenCobrandedMonthlyIncome
+              - screenAmericanFiscalNumberIdentification
+              - screenFopaLinkEUA
+              - screenEconomicLinkDescription
+              - screenMonthlyIncomeFinancialResponsible
+              - screenMonthlyIncome
+              - screenDocumentType
+              - screenWaitResponse
+              - screenNameComplet
+              - screenFopaBirthNationality
+              - screenFatcaSavedValuesActionRequired
+              - screenWaitComeBack
+              - screenCobrandedEmail
+              - screenAmericanCertificate
+              - screenCobrandedDocumentTutorial
+              - screenNotification
+              - screenCobrandedRequiredAction
+              - screenProfessionFinancialResponsible
+              - screenCobrandedScr
+              - screenCobrandedBirthDate
+              - screenReproved
+              - screenWarnCredit
+              - screenCobrandedContractCard
+              - screenFatcaWarningExclude
+              - screenFiscalNumberIdentification
+              - screenFopaCongratsSalaryAccount
+              - screenFopaUpgradeAccountConfirmValues
+              - screenPhone
+              - screenFatcaWarningExcludeReview
+              - screenUploadDivorceRegistration
+              - screenCityNoState
+              - screenFopaProfession
+              - screenBiometryDocument
+              - screenAddRepresentativePhone
+              - screenCongratulationsLogin
+              - screenDocumentGenerated
+              - screenCobrandedDocumentType
+              - screenFopaMotherNameComplet
+              - screenFopaAnalysisUpdateAccount
+              - screenGender
+              - screenFopaTerms
+              - screenFopaDocumentType
+              - screenGeolocalization
+              - screenAcceptEmails
+              - screenPassword
+              - screenAddRepresentativeTerms
+              - screenFopaInvestmentOffice
+              - screenPatrimonyFinancialResponsible
+              - screenLinkAccountInfo
+              - screenFopaMonthlyIncome
+              - screenCobrandedAddress
+              - screenOfficerSignature
+              - screenBirthDate
+              - screenDocumentRGTutorial
+              - screenDocumentFinancialResponsible
+              - screenMotherNameComplet
+              - screenDocumentCNHTutorial
+              - screenFopaGeolocation
+              - screenCity
+              - screenMaritalStatus
+              - screenTermsDigital
+              - screenCountry
+              - screenConfirmPassword
+              - screenProfession
+              - screenDocument
+              - screenConfirmValues
+              - screenBirthNationality
+              - screenFinancialLife
+              - screenLinkEUA
+              - screenDefinitiveExitBrazil
+              - screenTaxDomicile
+              - screenFatcaWarningEdit
+              - screenSegmentSelection
+              - screenFatcaWarningInsert
+              - screenEconomicLink
+              - screenIncludeNationality
+              - screenPublicOffices
+              - screenCountryRelationship
+              - screenFatcaNationalityManagementRequiredAction
+              - screenConfirmValuesW9
+              - screenNameCompletFinancialResponsible
+              - screenRenounceCitizenshipEUA
+              - screenFilterCredit
+              - screenDocumentTutorialSimple
+          example: "screenPatrimony"
+        current_screen:
+          type: string
+          description: |
+            Tela onde se preencheu os dados do registro
+
+            values:
+              - screenAddRepresentativeWaitResponse
+              - screenWelcome
+              - screenFopaMaritalStatus
+              - screenFopaCountry
+              - screenSpouseNameComplet
+              - screenMyntTerms
+              - screenAddRepresentativeBirthDate
+              - screenFopaRecap
+              - screenRequiredAction
+              - screenLinkAccount
+              - screenAddRepresentativeConfirmValues
+              - screenFopaNameSpouseComplet
+              - screenFinancialResponsibleMinorAge
+              - screenPatrimony
+              - screenWithoutFiscalNumberIdentification
+              - screenDocumentTutorial
+              - screenPublicOfficesFinancialResponsible
+              - screenCobrandedDocument
+              - screenCobrandedWaitResponse
+              - screenEmail
+              - screenFopaDocument
+              - screenOfficerSelection
+              - screenTermsWm
+              - screenDocumentUpload
+              - screenFopaAddress
+              - screenSpouseCPF
+              - screenOfficerAuthorizationUnicred
+              - screenNationality
+              - screenStateBirth
+              - screenMassifyReviewData
+              - screenOfficerInvitation
+              - screenAddress
+              - screenFopaNameComplet
+              - screenFopaInformInvestmentOffice
+              - screenFopaPhone
+              - screenFatcaNationalityManagement
+              - screenFatcaWarningReview
+              - screenUploadBirthCertificate
+              - screenTerms
+              - screenStateBirthNoCountry
+              - screenJustificationGenerationW8
+              - screenUploadWeddingCertificate
+              - screenCobrandedMonthlyIncome
+              - screenAmericanFiscalNumberIdentification
+              - screenFopaLinkEUA
+              - screenEconomicLinkDescription
+              - screenMonthlyIncomeFinancialResponsible
+              - screenMonthlyIncome
+              - screenDocumentType
+              - screenWaitResponse
+              - screenNameComplet
+              - screenFopaBirthNationality
+              - screenFatcaSavedValuesActionRequired
+              - screenWaitComeBack
+              - screenCobrandedEmail
+              - screenAmericanCertificate
+              - screenCobrandedDocumentTutorial
+              - screenNotification
+              - screenCobrandedRequiredAction
+              - screenProfessionFinancialResponsible
+              - screenCobrandedScr
+              - screenCobrandedBirthDate
+              - screenReproved
+              - screenWarnCredit
+              - screenCobrandedContractCard
+              - screenFatcaWarningExclude
+              - screenFiscalNumberIdentification
+              - screenFopaCongratsSalaryAccount
+              - screenFopaUpgradeAccountConfirmValues
+              - screenPhone
+              - screenFatcaWarningExcludeReview
+              - screenUploadDivorceRegistration
+              - screenCityNoState
+              - screenFopaProfession
+              - screenBiometryDocument
+              - screenAddRepresentativePhone
+              - screenCongratulationsLogin
+              - screenDocumentGenerated
+              - screenCobrandedDocumentType
+              - screenFopaMotherNameComplet
+              - screenFopaAnalysisUpdateAccount
+              - screenGender
+              - screenFopaTerms
+              - screenFopaDocumentType
+              - screenGeolocalization
+              - screenAcceptEmails
+              - screenPassword
+              - screenAddRepresentativeTerms
+              - screenFopaInvestmentOffice
+              - screenPatrimonyFinancialResponsible
+              - screenLinkAccountInfo
+              - screenFopaMonthlyIncome
+              - screenCobrandedAddress
+              - screenOfficerSignature
+              - screenBirthDate
+              - screenDocumentRGTutorial
+              - screenDocumentFinancialResponsible
+              - screenMotherNameComplet
+              - screenDocumentCNHTutorial
+              - screenFopaGeolocation
+              - screenCity
+              - screenMaritalStatus
+              - screenTermsDigital
+              - screenCountry
+              - screenConfirmPassword
+              - screenProfession
+              - screenDocument
+              - screenConfirmValues
+              - screenBirthNationality
+              - screenFinancialLife
+              - screenLinkEUA
+              - screenDefinitiveExitBrazil
+              - screenTaxDomicile
+              - screenFatcaWarningEdit
+              - screenSegmentSelection
+              - screenFatcaWarningInsert
+              - screenEconomicLink
+              - screenIncludeNationality
+              - screenPublicOffices
+              - screenCountryRelationship
+              - screenFatcaNationalityManagementRequiredAction
+              - screenConfirmValuesW9
+              - screenNameCompletFinancialResponsible
+              - screenRenounceCitizenshipEUA
+              - screenFilterCredit
+              - screenDocumentTutorialSimple
+          example: "screenFinancialLife"
+        status_analisys_credit:
+          type: string
+          description: |
+            Status da análise de crédito (quando aplicável)
+
+            values:
+              - APPROVED
+              - NoAlert
+              - Evaluating
+              - NOT_APPROVED
+              - AlertNoCredit
+          example: "AlertNoCredit"
+        device_id:
+          type: string
+          description: ID do dispositivo por onde o candidato realizou o onboarding
+          example: "d1e91d31c06fd9f8"
+        user_agent:
+          type: string
+          description: Informações gerais sobre o dispositivo por onde o candidato realizou o onboarding
+          example: "Digital/300648 (com.btg.pactual.digital.mobile notification: TRUE) okhttp/4.9.0"
+        accept_comunication:
+          type: string
+          description: |
+            Flag sinalizando se o candidato aceitará a comunicação do banco para com ele
+
+            values:
+              - true
+              - false
+          example: "true"
+        latitude:
+          type: string
+          description: Dado de localização (do aparelho no momento do preenchimento do registro)
+          example: "-204224343"
+        longitude:
+          type: string
+          description: Dado de localização (do aparelho no momento do preenchimento do registro)
+          example: "-546248683"
+        appsflyer_id:
+          type: string
+          description: ID da Appsflyer na fase de pré lead/tagueamento
+          example: "1676180261234-6226003539938123456"
+        fire_base_id:
+          type: string
+          description: ID da Firebase na fase de pré lead/tagueamento
+          example: "dT6nL9oITjOV5tLdKPu51A:APA91bF9fCRD8wps06aoVBAStzR2cdsTfv89qts1Cmevb1eRz4wDVlBFYcAPtZSvbC6Ojpb-yk9l5RB4W7SUwIY_J1a2x"
+        facebook_id:
+          type: string
+          description: ID do Facebook na fase de pré lead/tagueamento
+          example: 7527EE1DC07D8DEF0BDC25E450715089DCD373AB4CEDEECD81B3E59F8B
+        document_number:
+          type: string
+          description: Número do documento de identificação informado pelo candidato
+          example: "7058528801"
+        document_issuing_agency:
+          type: string
+          description: |
+            Agência emissora do documento de identificação informado pelo candidato
+
+            values:
+              - CRC
+              - PM
+              - PC
+              - CRM
+              - MMA
+              - CAU
+              - CGPI/DIREX/DPF
+              - SJTC
+              - SPTC
+              - CORE
+              - SEJUSP
+              - IFP
+              - OMB
+              - SSP
+              - MEX
+              - IIPR
+              - SJS
+              - SDS
+              - DPF
+              - CREA
+              - CRMV
+              - OAB
+              - SSI
+              - CG
+              - DETRAN
+              - CREF
+              - MD
+          example: "DETRAN"
+        document_type:
+          type: string
+          description: |
+            Tipo do documento de identificação informado pelo candidato
+
+            values:
+              - PSPT
+              - RG
+              - CMIL
+              - CRP
+              - RNE
+              - CNH
+              - CRNM
+          example: "CNH"
+        document_dt_capture_self:
+          type: string
+          description: Foto do rosto do candidato
+        document_dt_capture_document:
+          type: string
+          description: Foto do documento do candidato
+        mother_name:
+          type: string
+          description: Nome da mãe do candidato
+          example: "JOANA SILVA"
+        marital_status:
+          type: string
+          description: |
+            Estado civil do candidato
+
+            values:
+              - SING (Solteiro)
+              - MARR (Casado)
+              - DIVO (Divorciado)
+              - WIDO (Viúvo)
+              - COMA (União estável)
+              - LESE
+          example: "SING"
+        birth_date:
+          type: string
+          description: Data de aniversário do candidato
+          example: "10/02/1951"
+        gender:
+          type: string
+          description: |
+            Gênero do candidato
+
+            values: 
+              - FEMALE (Feminino)
+              - MALE (Masculino)
+              - OTHER (Outro)
+              - M (Masculino)
+              - F (Feminino)
+              - NRESP (Nenhuma das Respostas)
+          example: "FEMALE"
+        spouse_name:
+          type: string
+          description: Nome do cônjuge do candidato
+          example: "Maria José da Silva"
+        address_street:
+          type: string
+          description: Logradouro do endereço do candidato
+          example: "Tapauã"
+        address_number:
+          type: string
+          description: Número do endereço do candidato
+          example: 123
+        address_complement:
+          type: string
+          description: Complemento do endereço do candidato
+          example: "casa"
+        address_neighborhood:
+          type: string
+          description: Bairro do endereço do candidato
+          example: "Vila Monteiro Lobato"
+        address_city:
+          type: string
+          description: Cidade do endereço do candidato
+          example: "GUARULHOS"
+        address_uf:
+          type: string
+          description: Estado do endereço do candidato
+          example: "SAO PAULO"
+        address_country:
+          type: string
+          description: País do endereço do candidato
+          example: "Brasil"
+        address_cep:
+          type: string
+          description: CEP do endereço do candidato
+          example: "01234560"
+        external_relationship_country_birth:
+          type: string
+          description: País de nascimento do candidato
+          example: "BR"
+        external_relationship_state_birth:
+          type: string
+          description: UF de nascimento do candidato
+          example: "SP"
+        external_relationship_city_birth:
+          type: string
+          description: Cidade de nascimento do candidato
+          example: "SAO PAULO"
+        external_relationship_citizenship_nationality:
+          type: string
+          description: Lista das nacionalidades (caso tenha outras) do candidato
+          example: "[BR, US, IT]"
+        external_relationship_link_eua:
+          type: string
+          description: |
+            Botão selecionado indicando se possui vínculo com EUA
+
+            values:
+              - flowButtonFooterScreenLinkEUANo
+              - flowButtonFooterScreenLinkEUAYes
+          example: "flowButtonFooterScreenLinkEUANo"
+        profession:
+          type: string
+          description: Profissão do candidato
+          example: "Autônomo (a)"
+        position:
+          type: string
+          description: ID do cargo do candidato
+          example: 63
+        income:
+          type: string
+          description: Renda mensal declarada do candidato
+          example: 250000
+        patrimony_real_estate:
+          type: string
+          description: Valor em bens imobiliários declarados pelo candidato
+          example: 25000000
+        patrimony_moveables:
+          type: string
+          description: Valor em bens móveis declarados pelo candidato
+          example: 1300000
+        patrimony_investments:
+          type: string
+          description: Valor em Investimentos declarados pelo candidato
+          example: 300000
+        patrimony_welfare:
+          type: string
+          description: Valor em Previdência Privada declarada pelo candidato
+          example: 400000
+        patrimony_others:
+          type: string
+          description: Outros valores patrimoniais declarados pelo candidato
+          example: 10000
+        patrimony_no_want_inform:
+          type: string
+          description: |
+            Flag indicando se o cadidato deseja ou não informar os dados patrimoniais (true/false)
+
+            values:
+              - true 
+              - false
+          example: "false"
+        financial_responsible_document:
+          type: string
+          description: Documento do responsável financeiro do candidato
+          example: "11122233344"
+        financial_responsible_profession:
+          type: string
+          description: Profissão do responsável financeiro do candidato
+          example: Engenheiro
+        financial_responsible_position:
+          type: string
+          description: ID de profissão ocupada pelo responsável financeiro do candidato
+          example: 28
+        financial_responsible_income:
+          type: string
+          description: Renda mensal do responsável financeiro do candidato
+          example: 5000.0
+        financial_responsible_patrimony_real_estate:
+          type: string
+          description: Valor dos bens imóveis do responsável financeiro do candidato
+          example: 5000000
+        financial_responsible_patrimony_moveables:
+          type: string
+          description: Valor dos bens móveis do responsável financeiro do candidato
+          example: 0.0
+        financial_responsible_patrimony_investments:
+          type: string
+          description: Valor dos investimentos financeiros do responsável financeiro do candidato
+          example: 0.0
+        financial_responsible_patrimony_welfare:
+          type: string
+          description: Valor dos bens de consumo duráveis do responsável financeiro do candidato
+          example: 0.0
+        financial_responsible_patrimony_others:
+          type: string
+          description: Valor dos outros bens do responsável financeiro do candidato
+          example: 0.0
+        financial_responsible_patrimony_no_want_inform:
+          type: string
+          description: |
+            Flag sinalizando se o responsável financeiro optou por não fornecer informações sobre seu patrimônio (true/false)
+
+            values:
+              - true
+              - false
+          example: "false"
+        advisor_name:
+          type: string
+          description: Nome do consultor financeiro que acompanha o candidato durante o processo de integração
+          example: "ASSESSORIA DIGITAL"
+        advisor_mail:
+          type: string
+          description: Endereço de e-mail do consultor financeiro que acompanha o candidato durante o processo de integração
+          example: "assessoria@btgpactual.com"
+        advisor_type:
+          type: string
+          description: |
+            Tipo de consultor financeiro que acompanha o candidato durante o processo de integração
+
+            values:
+              - GESTOR-ADM
+              - AAI
+              - ADV
+              - GRP
+              - OFX
+              - INT
+              - CBC
+              - AWM
+              - CBA
+              - CNS
+          example: "INT"
+        advisor_cge:
+          type: string
+          description: Número CGE (Cadastro Geral de Empregados) do consultor financeiro que acompanha o candidato durante o processo de integração
+          example: 123456
+        advisor_cge_partner:
+          type: string
+          description: Número CGE do parceiro do BTG ao qual o consultor financeiro está associado
+          example: 123456
+        advisor_name_partner:
+          type: string
+          description: Nome do Escritório ao qual o consultor financeiro está associado
+          example: "Assessoria BTG Pactual"
+        mgm_code:
+          type: string
+          description: Código do gerente responsável pelo acompanhamento do candidato durante o processo de integração
+          example: A5BC62
+        mgm_nif:
+          type: string
+          description: Número de identificação fiscal (NIF/CPF) do gerente responsável pelo acompanhamento do candidato durante o processo de integração
+          example: 11122233344
+        advertising_id:
+          type: string
+          description: ID de publicidade associado ao candidato durante o processo de integração
+          example: 0c2e4ace-a0ec-28ea-8485-84aa2369914b
+        invite:
+          type: string
+          description: Convite usado pelo candidato para participar do processo de integração
+          example: "780E5A"
+        platform:
+          type: string
+          description: |
+            Plataforma utilizada pelo candidato durante o processo de integração
+
+            values:
+              - digital
+              - default
+              - banking
+          example: "digital"
+        user_pseudo_id:
+          type: string
+          description: ID pseudônimo do usuário associado ao candidato durante o processo de integração
+          example: "23e78383a1cd70d7aa53D"
+        joint_account_document_coholder:
+          type: string
+          description: Número do documento de identificação do segundo titular da conta conjunta
+          example: 11122233344
+        joint_account_document_holder:
+          type: string
+          description: Número do documento de identificação do titular da conta conjunta
+          example: 11122233344
+        joint_account_exists_joint_account:
+          type: string
+          description: |
+            Flag sinalizando se o candidato possui uma conta bancária conjunta (true/false)
+
+            values:
+              - true
+              - false
+          example: "false"
+        joint_account_name_coholder:
+          type: string
+          description: Nome do segundo titular da conta bancária conjunta
+          example: "Maria José da Silva"
+        joint_account_name_holder:
+          type: string
+          description: Nome do titular da conta bancária conjunta
+          example: "Maria José da Silva"
+        pix_field_pix_cpf:
+          type: string
+          description: CPF associado à chave PIX do candidato
+          example: "111.222.333-44"
+        pix_field_pix_email:
+          type: string
+          description: E-mail associado à chave PIX do candidato
+          example: "emailfantasiapix@gmail.com"
+        pix_field_pix_phone:
+          type: string
+          description: Número de telefone associado à chave PIX do candidato
+          example: "(21) 91234 5678"
+        pix_flow_button_selected:
+          type: string
+          description: |
+            Botão selecionado pelo candidato confirmando o compartilhamento de sua chave PIX durante o processo de integração
+
+            values:
+              - flowButtonFooterScreenPixLater
+              - flowButtonFooterScreenPixRegister
+          example: "flowButtonFooterScreenPixRegister"
+        system_origin:
+          type: string
+          description: |
+            Sistema de origem usado pelo candidato durante o processo de integração
+
+            values:
+              - AREA_PUBLICA
+              - AREA_PUBLICA-BTGRESEARCH
+          example: "AREA_PUBLICA"
+        stack_screen:
+          type: string
+          description: Lista de todas as telas da stack
+          example: "[screenBirthDate, screenGender, screenMotherNameComplet, screenNameComplet, screenEmail, screenAcceptEmails, screenPhone, screenPassword, screenConfirmPassword, screenSegmentSelection, screenTerms, screenMaritalStatus, screenSpouseCPF, screenAddress, screenGeolocalization, screenCountry, screenStateBirth, screenCity, screenBirthNationality, screenLinkEUA, screenProfession, screenPublicOffices, screenMonthlyIncome, screenPatrimony, screenDocumentType, screenDocument, screenDocumentTutorial, screenConfirmValues, screenPixRegister]"
+        ingestion_timestamp:
+          type: string
+          description: Horário em que esse registro entrou na base de dados
+          example: "2023-02-12 05:41:36.000"
+        source:
+          type: string
+          description: |
+            Fila de origem
+
+            values:
+              - digital
+              - banking
+          example: "digital"
+        write_timestamp:
+          type: string
+          description: Horário em que este registro foi inserido na tabela
+          example: "2023-02-12 06:49:24.881"
+        status_reason:
+          type: string
+          description: |
+            Motivo de reprovação de análise
+
+            values:
+              - Confirmação Expirada
+              - Reprovado por Bcheck
+              - Reprovado por AML
+              - Reprovado pelo Motor de Crédito
+              - Reprovado por Fraude
+              - Reprovado por Onboarding
+              - Confirmação Negada
+              - Reprovado pelo Motor de Elegibilidade
+          example: "Reprovado por Onboarding"

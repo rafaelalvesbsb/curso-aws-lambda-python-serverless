@@ -1,0 +1,18 @@
+# Lambda Dependencies
+# Only external dependencies - btg, hubspot, aws come from SharedLibrariesLayer
+#
+# NOTE: Do NOT add btg, hubspot, or aws here - they are provided by the Layer
+# managed by scripts/sync_libs.sh
+#
+# NOTE: pandas, pyarrow, numpy estão na SharedLibrariesLayer (layers/shared-libs/requirements.txt)
+# Não adicionar aqui para não duplicar e não estourar o limite de 250MB das funções.
+
+# External Dependencies
+httpx>=0.28.1
+pydantic>=2.12.5
+pydantic-settings>=2.12.0
+tenacity>=9.0.0
+loguru>=0.7.3
+boto3>=1.35.0
+aioboto3>=13.0.0
+python-dotenv>=1.0.0

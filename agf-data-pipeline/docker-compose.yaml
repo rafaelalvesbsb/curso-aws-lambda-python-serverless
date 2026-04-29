@@ -1,0 +1,12 @@
+# LocalStack foi migrado para o homelab server.
+# Acesso via WARP: http://localhost.localstack.cloud:4566
+#
+# Este arquivo não é mais necessário para subir serviços locais.
+# Mantido apenas para referência da rede Docker usada nos builds SAM.
+#
+# Para documentação da infra do servidor, consulte: docs/homelab.md
+
+networks:
+  agfi-network:
+    name: agfi-network
+    driver: bridge

@@ -1,0 +1,1240 @@
+openapi: 3.0.3
+info:
+  version: 1.0.0
+  title: API de consulta de notas de corretagem
+  description: |
+    API responsável pela consulta de notas de corretagem.
+servers:
+  - url: https://api.btgpactual.com/iaas-brokerage-notes
+paths:
+  /api/v1/brokerage-notes/account:
+    post:
+      tags:
+        - post-brokerage-notes-by-account-and-date
+      summary: Busca de notas de corretagem por conta e data de referência
+      description: |
+        Recupera as notas de corretagem através de uma conta e data de referência
+
+        Para realizar a consulta é necessário informar uma data de referência.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real 
+
+        Janela de dados: D-X até D-1
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BrokerageNotesRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrokerageNotes"
+          description: Successful response
+          headers:
+            x-id-pactual:
+              schema:
+                type: string
+                example: 2ffb9cfb-8dae-4956-b8d9-8d04ff5823ee
+              description: Identificador único da requisição
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message: "access_token: The Token has expired on Wed Jul 28 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 404
+                    title: Not Found
+                    meta:
+                      globalErrors:
+                        - code: Not Found
+                          message: "Não há valores publicados para esta data"
+          description: Não há valores publicados para esta data
+      operationId: postBrokerageNotesReport
+  /api/v1/brokerage-notes/derivative/account:
+    post:
+      tags:
+        - post-derivative-brokerage-notes-by-account-and-date
+      summary: Busca de notas de corretagem por conta e data de referência - Derivativos
+      description: |
+        Recupera as notas de corretagem de ativos derivativos através de uma conta e data de referência
+
+        Para realizar a consulta é necessário informar uma data de referência.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de Notas de Corretagem - Derivativos (brokerage-notes-derivative)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        Obs: O dado será entregue através de um arquivo zip contendo o pdf de todas as notas de corretagem referentes a aquela conta e data.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real 
+
+        Janela de dados: D-X até D-1
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BrokerageNotesRequest"
+      responses:
+        "202":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+        "500":
+          content:
+            application/json:
+              examples:
+                Erro interno:
+                  value:
+                    errors:
+                      - code: 500
+                        message: Internal Server error for partner with cnpj 12456461
+          description: "Erro interno, o administrador da API deverá ser informado."
+        "401":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 401
+                    title: Unable to process the request
+                    meta:
+                      globalErrors:
+                        - code: Authorization Error
+                          message: "access_token: The Token has expired on Wed Jul 28 12:49:16 UTC 2021."
+          description: Token de acesso não autorizado
+        "404":
+          content:
+            application/json:
+              examples:
+                Não autorizado:
+                  value:
+                    status: 404
+                    title: Not Found
+                    meta:
+                      globalErrors:
+                        - code: Not Found
+                          message: "Não há valores publicados para esta data"
+          description: Não há valores publicados para esta data
+      operationId: postBrokerageNotesReport
+components:
+  schemas:
+    BrokerageNotesRequest:
+      title: Request - Notas de Corretagem por conta e data
+      type: object
+      properties:
+        date:
+          description: "Data que deseja consultar as notas de corretagem"
+          example: "2022-08-19"
+          pattern: "YYYY-MM-DD"
+          type: string
+        accountNumber:
+          description: "Numero da conta que deseja consultar as notas de corretagem"
+          example: "000000000"
+          type: string
+    BrokerageNotes:
+      title: Response - Notas de Corretagem por conta e data
+      type: object
+      properties:
+        loan:
+          description: Notas de corretagem de Aluguel.
+          title: loan
+          type: array
+          items:
+            $ref: "#/components/schemas/loan"
+        bmf:
+          description: Notas de corretagem do mercado BMF.
+          title: bmf
+          type: array
+          items:
+            $ref: "#/components/schemas/bmf"
+        bov:
+          description: Notas de corretagem do mercado BOV.
+          title: bov
+          type: array
+          items:
+            $ref: "#/components/schemas/bov"
+        option:
+          description: Notas de corretagem do mercado de Opções.
+          title: option
+          type: array
+          items:
+            $ref: "#/components/schemas/bov"
+    loan:
+      type: object
+      description: Nota de Corretagem de Aluguel
+      properties:
+        client:
+          type: object
+          description: Informações do cliente
+          properties:
+            account_number:
+              type: string
+              description: Número da conta do cliente
+              example: "111111111"
+            address:
+              type: string
+              description: Endereço do cliente
+              example: "AV. LIMEIRA, 999  - CASA"
+            cep:
+              type: string
+              description: CEP do cliente
+              example: "99999999"
+            city:
+              type: string
+              description: Cidade do cliente
+              example: "BARUERI"
+            client_name:
+              type: string
+              description: Nome do cliente
+              example: "KO CHIA LIN"
+            cpf_cnpj:
+              type: string
+              description: CPF ou CNPJ do cliente
+              example: "9999999999"
+            participant:
+              type: string
+              description: Participante do cliente
+              example: "1026"
+            state:
+              type: string
+              description: Estado do cliente
+              example: "SAO PAULO"
+        financial_summary:
+          type: object
+          description: Resumo financeiro da nota de corretagem
+          properties:
+            clearing_brokerage:
+              type: number
+              description: Corretagem de liquidação
+              example: 0.0
+            emoluments:
+              type: number
+              description: Emolumentos
+              example: -0.01
+            execution_brokerage:
+              type: number
+              description: Corretagem de execução
+              example: 203.15
+            gross_value:
+              type: number
+              description: Valor bruto
+              example: 391.24
+            irrf:
+              type: number
+              description: Imposto de Renda Retido na Fonte (IRRF)
+              example: 88.04
+            net_value:
+              type: number
+              description: Valor líquido
+              example: 100.04
+        invoice_number:
+          type: integer
+          description: Número da nota de corretagem
+          example: 9999999
+        movement_date:
+          type: string
+          description: Data da movimentação
+          pattern: "YYYY-MM-DD"
+          example: "2024-11-18"
+        movements:
+          type: array
+          description: Movimentações da nota de corretagem
+          items:
+            type: object
+            properties:
+              clearing_brokerage:
+                type: number
+                description: Corretagem de liquidação
+                example: 0.0
+              contract_code:
+                type: string
+                description: Código do contrato
+                example: "299999999999999-1"
+              contract_side:
+                type: string
+                description: Lado do contrato
+                example: "Tomador"
+              contract_type:
+                type: string
+                description: Tipo do contrato
+                example: "DIRETO"
+              contract_value:
+                type: number
+                description: Valor do contrato
+                example: 58.9
+              creation_date:
+                type: string
+                description: Data de criação do contrato
+                example: "2024-11-11T00:00:00"
+              current_quantity:
+                type: integer
+                description: Quantidade atual do contrato
+                example: 0
+              emoluments:
+                type: number
+                description: Emolumentos
+                example: -0.01
+              execution_brokerage:
+                type: number
+                description: Corretagem
+              expire_date:
+                type: string
+                description: Data de expiração do contrato
+                pattern: "YYYY-MM-DD"
+                example: "2024-12-23T00:00:00"
+              fee:
+                type: number
+                description: Taxa
+                example: 13.15
+              irrf:
+                type: number
+                description: Imposto de Renda Retido na Fonte (IRRF)
+                example: 0.0
+              lock_up_date:
+                type: string
+                description: Data de bloqueio do contrato
+                pattern: "YYYY-MM-DD"
+                example: "2024-11-12T00:00:00"
+              net_value:
+                type: number
+                description: Valor líquido
+                example: -0.16
+              original_quantity:
+                type: integer
+                description: Quantidade original do contrato
+                example: 10
+              remuneration:
+                type: number
+                description: Remuneração
+                example: -0.08
+              settle_quantity:
+                type: integer
+                description: Quantidade de liquidação
+                example: 10
+              settlement_date:
+                type: string
+                description: Data de liquidação
+                pattern: "YYYY-MM-DD"
+                example: "2024-11-18T00:00:00"
+              settlement_value:
+                type: number
+                description: Valor de liquidação
+                example: 58.9
+              symbol:
+                type: string
+                description: Ticket do ativo
+                example: "CMANA2"
+    bmf:
+      type: object
+      description: Nota de Corretagem
+      properties:
+        financialSummary:
+          type: object
+          description: Resumo financeiro da nota de corretagem
+          properties:
+            available_buyings:
+              type: number
+              description: Compras disponíveis
+              example: 0.0
+            available_sellings:
+              type: number
+              description: Vendas disponíveis
+              example: 0.0
+            bmf_fee:
+              type: number
+              description: Taxa BM&F
+              example: -222.05
+            clearing:
+              type: number
+              description: Corretagem de liquidação
+              example: 0.0
+            client_tax:
+              type: number
+              description: Taxa de cliente
+              example: -1.28
+            client_tax_daytrade:
+              type: number
+              description: Taxa de cliente Day Trade
+              example: -146.88
+            cobranca_domiciliar:
+              type: string
+              description: Cobrança domiciliar
+            cofins:
+              type: number
+              description: COFINS
+              example: -242.81
+            daytrade_adjustment:
+              type: number
+              description: Ajuste Day Trade
+              example: 16347.0
+            iss:
+              type: number
+              description: ISS
+              example: -303.52
+            operational_fee:
+              type: number
+              description: Taxa operacional
+              example: -5484.68
+            options_buying:
+              type: number
+              description: Compras de opções
+              example: 0.0
+            options_selling:
+              type: number
+              description: Vendas de opções
+              example: 0.0
+            other_fees:
+              type: number
+              description: Outras taxas
+              example: 0.0
+            pis:
+              type: number
+              description: PIS
+              example: -39.45
+            position_adjustment:
+              type: number
+              description: Ajuste de posição
+              example: -66180.83
+            registry_fee:
+              type: number
+              description: Taxa de registro
+              example: -411.62
+            totalIss:
+              type: number
+              description: Total de ISS
+              example: -585.78
+            total_fees:
+              type: number
+              description: Total de taxas
+              example: -6704.13
+            total_gross:
+              type: number
+              description: Total bruto
+              example: -49833.83
+            total_net:
+              type: number
+              description: Total líquido
+              example: -56686.12
+            cvm179_fee:
+              type: number
+              description: Taxa CVM 179
+              example: 222.1
+        ticketInfo:
+          type: object
+          description: Informações do ticket
+          properties:
+            ajusteDayTrade:
+              type: number
+              description: Ajuste Day Trade
+              example: 16347.0
+            ajusteDayTradeText:
+              type: string
+              description: Texto do ajuste Day Trade
+              example: 16347.0
+            ajustePos:
+              type: number
+              description: Ajuste de posição
+              example: 66180.83
+            ajustePosText:
+              type: string
+              description: Texto do ajuste de posição
+              example: 66180.83
+            cep:
+              type: string
+              description: CEP do cliente
+              example: "89300001"
+            cidadeEstado:
+              type: string
+              description: Cidade e estado do cliente
+              example: "EXAMPLE - SANTA CATARINA"
+            codCliente:
+              type: string
+              description: Código do cliente
+              example: "99999999"
+            compraDisp:
+              type: number
+              description: Compras disponíveis
+              example: 0.0
+            compraOp:
+              type: number
+              description: Compras de opções
+              example: 0.0
+            continua:
+              type: string
+              description: Continuação
+            corretora:
+              type: string
+              description: Corretora
+              example: "85-0"
+            corretoraBairro:
+              type: string
+              description: Bairro da corretora
+              example: "ITAIM BIBI"
+            corretoraCep:
+              type: string
+              description: CEP da corretora
+              example: "999999-999"
+            corretoraCidadeEstado:
+              type: string
+              description: Cidade e estado da corretora
+              example: "SÃO PAULO - SP"
+            corretoraCnpj:
+              type: string
+              description: CNPJ da corretora
+              example: "999.999.999-999"
+            corretoraContato:
+              type: string
+              description: Contato da corretora
+              example: "Tel: (011) 9999 - 9999"
+            corretoraEmailAtendimento:
+              type: string
+              description: Email de atendimento da corretora
+              example: "example@btgpactual.com"
+            corretoraEmailOuvidoria:
+              type: string
+              description: Email da ouvidoria da corretora
+              example: "example@btgpactual.com"
+            corretoraEndereco:
+              type: string
+              description: Endereço da corretora
+              example: "Avenida exemplo, 3477 - 14º Andar"
+            corretoraNome:
+              type: string
+              description: Nome da corretora
+              example: "Example CTVM S.A."
+            corretoraOuvidoria:
+              type: string
+              description: Ouvidoria da corretora
+              example: "9999-999-0048"
+            corretoraPhonesFooter:
+              type: string
+              description: Telefones da corretora para o rodapé
+              example: "Atendimento: 9999-999-2827 Ouvidoria: 9999-999-0048"
+            corretoraSac:
+              type: string
+              description: SAC da corretora
+              example: "9999-999-2827"
+            corretoraSite:
+              type: string
+              description: Site da corretora
+              example: "https://example/portal/"
+            dataPregao:
+              type: string
+              description: Data do pregão
+              example: "11/11/2024"
+            docCliente:
+              type: string
+              description: Documento do cliente (CPF/CNPJ)
+              example: "99999999999"
+            enderecoCliente:
+              type: string
+              description: Endereço do cliente
+              example: "EXAMPLE, 377 - SALA 03"
+            irrf:
+              type: number
+              description: IRRF
+              example: 1.28
+            irrfCorretagem:
+              type: number
+              description: IRRF da corretagem
+              example: 0.0
+            irrfDayTrade:
+              type: number
+              description: IRRF do Day Trade
+              example: 146.88
+            iss:
+              type: number
+              description: ISS
+              example: 585.78
+            nomeCliente:
+              type: string
+              description: Nome do cliente
+              example: "EXAMPLE LTDA"
+            numeroFolha:
+              type: string
+              description: Número da folha
+              example: "1"
+            numeroNota:
+              type: string
+              description: Número da nota
+              example: "346327"
+            outros:
+              type: number
+              description: Outros
+              example: 0.0
+            outrosCustos:
+              type: number
+              description: Outros custos
+              example: 0.0
+            taxaEmol:
+              type: number
+              description: Taxa de emolumentos
+              example: 222.05
+            taxaEmolText:
+              type: string
+              description: Texto da taxa de emolumentos
+            taxaOp:
+              type: number
+              description: Taxa de operação
+              example: 5484.68
+            taxaReg:
+              type: number
+              description: Taxa de registro
+              example: 411.62
+            totalContaInvest:
+              type: number
+              description: Total da conta de investimento
+              example: 0.0
+            totalContaInvestText:
+              type: string
+              description: Texto do total da conta de investimento
+            totalContaNormal:
+              type: number
+              description: Total da conta normal
+              example: 56537.96
+            totalContaNormalText:
+              type: string
+              description: Texto do total da conta normal
+            totalDespesas:
+              type: number
+              description: Total de despesas
+              example: 6704.13
+            totalDespesasText:
+              type: string
+              description: Texto do total de despesas
+            totalLiq:
+              type: number
+              description: Total líquido
+              example: 56537.96
+            totalLiqNota:
+              type: number
+              description: Total líquido da nota
+              example: 56686.12
+            totalLiqNotaText:
+              type: string
+              description: Texto do total líquido da nota
+            totalLiqText:
+              type: string
+              description: Texto do total líquido
+            valorNeg:
+              type: number
+              description: Valor da negociação
+              example: 49833.83
+            valorNegText:
+              type: string
+              description: Texto do valor da negociação
+            vendaDisp:
+              type: number
+              description: Vendas disponíveis
+              example: 0.0
+            vendaOp:
+              type: number
+              description: Vendas de opções
+              example: 0.0
+            fee:
+              type: number
+              description: Taxa
+              example: 222.1
+            tradeList:
+              type: array
+              description: Lista de negociações
+              items:
+                type: object
+                properties:
+                  cV:
+                    type: string
+                    description: Compra ou venda
+                    example: "V"
+                  dC:
+                    type: string
+                    description: Day Trade ou normal
+                    example: "D"
+                  mercadoria:
+                    type: string
+                    description: Mercadoria
+                    example: "CCMF25"
+                  precoAjuste:
+                    type: number
+                    description: Preço de ajuste
+                    example: 77.59
+                  quantidade:
+                    type: number
+                    description: Quantidade
+                    example: 537
+                  taxaOperacional:
+                    type: number
+                    description: Taxa operacional
+                    example: 0.0
+                  tipoNegocio:
+                    type: string
+                    description: Tipo de negócio
+                    example: "AJUPOS"
+                  valorOperacao:
+                    type: number
+                    description: Valor da operação
+                    example: 200569.5
+                  vencimento:
+                    type: string
+                    description: Vencimento
+                    example: "15/01/2025"
+    bov:
+      type: object
+      description: Nota de Corretagem
+      properties:
+        summarizedTradeList:
+          type: array
+          items:
+            type: object
+            properties:
+              precoMedioCredito:
+                type: number
+                description: Preço médio de crédito
+                example: 7.93
+              precoMedioVenda:
+                type: number
+                description: Preço médio de venda
+                example: 7.93
+              quantidadeTotalCredito:
+                type: integer
+                description: Quantidade total de crédito
+                example: 4100
+              quantidadeTotalVenda:
+                type: integer
+                description: Quantidade total de venda
+                example: 4100
+              titulo:
+                type: string
+                description: Título
+                example: AMER3\tON
+              valorTotalCredito:
+                type: number
+                description: Valor total de crédito
+                example: 32511.0
+              valorTotalVenda:
+                type: number
+                description: Valor total de venda
+                example: 32511.0
+              quantidadeTotalDebito:
+                type: integer
+                description: Quantidade total de débito
+                example: 2400
+              precoMedioDebito:
+                type: number
+                description: Preço médio de débito
+                example: 29.75
+              valorTotalDebito:
+                type: number
+                description: Valor total de débito
+                example: 71393.98
+              quantidadeTotalCompra:
+                type: integer
+                description: Quantidade total de compra
+                example: 2400
+              precoMedioCompra:
+                type: number
+                description: Preço médio de compra
+                example: 29.75
+              valorTotalCompra:
+                type: number
+                description: Valor total de compra
+                example: 71393.98
+        ticketInfo:
+          type: object
+          properties:
+            acionista:
+              type: string
+              description: Acionista
+            administrador:
+              type: string
+              description: Administrador
+            agencia:
+              type: string
+              description: Agência
+            assessor:
+              type: string
+              description: Assessor
+            banco:
+              type: string
+              description: Banco
+            bolsaDataEmol:
+              type: number
+              description: Valor da taxa de emolumentos da B3
+              example: 18.75
+            bolsaDataTaxaAna:
+              type: number
+              description: Valor da taxa de análise da B3
+              example: 0.0
+            bolsaDataTaxaTermo:
+              type: number
+              description: Valor da taxa de termo da B3
+              example: 0.0
+            bolsaDataTotal:
+              type: number
+              description: Valor total das taxas da B3
+              example: 18.75
+            bolsaTextEmol:
+              type: string
+              description: Texto da taxa de emolumentos da B3
+              example: D
+            bolsaTextTaxaAna:
+              type: string
+              description: Texto da taxa de análise da B3
+              example: ""
+            bolsaTextTaxaTermo:
+              type: string
+              description: Texto da taxa de termo da B3
+              example: ""
+            bolsaTextTotal:
+              type: string
+              description: Texto do valor total das taxas da B3
+              example: D
+            campoCliente:
+              type: string
+              description: Campo do cliente
+              example: Cliente
+            ci:
+              type: string
+              description: CI
+              example: N
+            clearDataTaxaLiq:
+              type: number
+              description: Valor da taxa de liquidação da Clear
+              example: 69.8
+            clearDataTaxaReg:
+              type: number
+              description: Valor da taxa de registro da Clear
+              example: 0.0
+            clearDataTotal:
+              type: number
+              description: Valor total das taxas da Clear
+              example: 31481.2
+            clearDataValorLiq:
+              type: number
+              description: Valor líquido da Clear
+              example: 31551.0
+            clearTextTaxaLiq:
+              type: string
+              description: Texto da taxa de liquidação da Clear
+              example: D
+            clearTextTaxaReg:
+              type: string
+              description: Texto do valor total das taxas da Clear
+              example: 0.0
+            clearTextTotal:
+              type: string
+              description: Texto do valor total das taxas da Clear
+              example: C
+            clearTextValorLiq:
+              type: string
+              description: Texto do valor líquido da Clear
+              example: C
+            codCliente:
+              type: string
+              description: Código do cliente
+              example: 85-0 004347449
+            cofins:
+              type: number
+              description: COFINS
+              example: 0.26
+            compNome:
+              type: string
+              description: Nome da companhia
+            continua:
+              type: string
+              description: Continua
+            correDataClear:
+              type: number
+              description: Valor da taxa de corretagem da Clear
+              example: 6.0
+            correDataExec:
+              type: number
+              description: Valor da taxa de execução da corretora
+              example: 0.0
+            correDataExecCasa:
+              type: number
+              description: Valor da taxa de execução da casa
+              example: 0.0
+            correDataIrrf:
+              type: number
+              description: Valor da taxa de IRRF da corretora
+              example: 1.62
+            correDataIss:
+              type: number
+              description: Valor da taxa de ISS da corretora
+              example: 0.63
+            correDataOutras:
+              type: number
+              description: Valor de outras taxas de corretagem
+              example: 0.0
+            correDataTotal:
+              type: number
+              description: Valor total das taxas de corretagem
+              example: 6.63
+            correTextClear:
+              type: string
+              description: Texto da taxa de corretagem da Clear
+              example: D
+            correTextExec:
+              type: string
+              description: Texto da taxa de execução da corretora
+            correTextExecCasa:
+              type: string
+              description: Texto da taxa de execução da casa
+            correTextIrrf:
+              type: string
+              description: Texto da taxa de IRRF da corretora
+            correTextIss:
+              type: string
+              description: Texto da taxa de ISS da corretora
+              example: D
+            correTextOutras:
+              type: string
+              description: Texto de outras taxas de corretagem
+            correTextTotal:
+              type: string
+              description: Texto do valor total das taxas de corretagem
+              example: D
+            correDataTTA:
+              type: number
+              description: Taxa de Transferencias de Ativos
+              example: 1.85
+            correTextTTA:
+              type: string
+              description: Texto da Taxa de Transferencias de Ativos
+              example: "D"
+            corretDayTrade:
+              type: string
+              description: Detalhamento de corretagem de day trade
+              example: "Corretagem: -R$ 3,00"
+            corretoraBairro:
+              type: string
+              description: Bairro da corretora
+              example: ITAIM BIBI
+            corretoraCep:
+              type: string
+              description: CEP da corretora
+              example: 99999999
+            corretoraCidadeEstado:
+              type: string
+              description: Cidade e estado da corretora
+              example: SÃO PAULO - SP
+            corretoraCnpj:
+              type: string
+              description: CNPJ da corretora
+              example: 99999999
+            corretoraContato:
+              type: string
+              description: Contato da corretora
+            corretoraEmailAtendimento:
+              type: string
+              description: Email de atendimento da corretora
+              example: suporte@exemplo.com.br
+            corretoraEmailOuvidoria:
+              type: string
+              description: Email da ouvidoria da corretora
+              example: ouvidoria@exemplo.com.br
+            corretoraEndereco:
+              type: string
+              description: Endereço da corretora
+              example: Avenida Exemplo, 3600 - Cj 72
+            corretoraNome:
+              type: string
+              description: Nome da corretora
+              example: Exemplo Investimentos S.A.
+            corretoraOuvidoria:
+              type: string
+              description: Telefone da ouvidoria da corretora
+              example: 11 111 111
+            corretoraPhonesFooter:
+              type: string
+              description: Texto do rodapé com os telefones da corretora
+              example: "Atendimento: 111 11111 1111  Ouvidoria: 111 111 11111"
+            corretoraSac:
+              type: string
+              description: Telefone do SAC da corretora
+              example: 111 11111 1111
+            corretoraSite:
+              type: string
+              description: Site da corretora
+              example: http://www.exemplo.com.br
+            custodiante:
+              type: string
+              description: Custodiante
+            dataLiqui:
+              type: string
+              description: Data de liquidação
+              example: 19/11/2024
+            dataPregao:
+              type: string
+              description: Data de pregão
+              example: 14/11/2024
+            detalheDayTrade:
+              type: string
+              description: Detalhamento de day trade
+              example: "Detalhamento do Day Trade:"
+            docCliente:
+              type: string
+              description: Documento do cliente
+              example: 111.111.111-11
+            emolDayTrade:
+              type: string
+              description: Detalhamento da taxa de emolumentos de day trade
+              example: "Emolumentos: -R$ 11,11"
+            enderecoCliente:
+              type: string
+              description: Endereço do cliente
+              example: AV. EXEMPLO, 305 - CASA EXEMPLO SAO PAULO
+            infoBrutoDayTrade:
+              type: string
+              description: Detalhamento do valor bruto de day trade
+              example: "Valor Bruto: -R$ 960,00"
+            infoIrCommon:
+              type: number
+              description: Valor do IRRF comum
+              example: 32511.0
+            infoIrDayTrade:
+              type: string
+              description: Detalhamento do IRRF de day trade
+              example: "Day Trade: Base -R$ 1.042,11 IRRF Projeção R$ 0,00"
+            iss:
+              type: number
+              description: ISS
+              example: 0.33
+            liquiData:
+              type: number
+              description: Valor líquido de data
+              example: 31455.82
+            liquiText:
+              type: string
+              description: Texto do valor líquido
+              example: C
+            nomeCliente:
+              type: string
+              description: Nome do cliente
+              example: NOME EXEMPLO
+            numeroCliente:
+              type: string
+              description: Número do cliente
+              example: "111111111"
+            numeroFolha:
+              type: string
+              description: Número da folha
+              example: "1"
+            numeroNota:
+              type: string
+              description: Número da nota
+              example: 62711111729
+            opearationResumePage:
+              type: boolean
+              description: Indica se a página de resumo de operações deve ser exibida
+              example: false
+            pVinc:
+              type: string
+              description: PVinc
+              example: N
+            participRepasse:
+              type: string
+              description: Participação no repasse
+              example: 1026
+            pis:
+              type: number
+              description: PIS
+              example: 0.04
+            resNegComprasVista:
+              type: number
+              description: Valor das compras à vista
+              example: 171840.0
+            resNegDebentures:
+              type: number
+              description: Valor das debêntures
+              example: 0.0
+            resNegOpcoesCompras:
+              type: number
+              description: Valor das opções de compra
+              example: 0.0
+            resNegOpcoesVendas:
+              type: number
+              description: Valor das opções de venda
+              example: 0.0
+            resNegOperacoresTermo:
+              type: number
+              description: Valor das operações a termo
+              example: 0.0
+            resNegValorOperacoes:
+              type: number
+              description: Valor total das operações
+              example: 375231.0
+            resNegValorTitulos:
+              type: number
+              description: Valor dos títulos
+              example: 0.0
+            resNegVendasVista:
+              type: number
+              description: Valor das vendas à vista
+              example: 203391.0
+            telCliente:
+              type: string
+              description: Telefone do cliente
+              example: (11) 41917614
+            txAnaDayTrade:
+              type: string
+              description: Detalhamento da taxa de análise de day trade
+              example: "Taxa Ana: R$ 0,00"
+            txIssDayTrade:
+              type: string
+              description: Detalhamento da taxa de ISS de day trade
+              example: "ISS*: -R$ 0,31"
+            txLiqDayTrade:
+              type: string
+              description: Detalhamento da taxa de liquidação de day trade
+              example: "Taxa de Liquidação: -R$ 61,68"
+            txRegDayTrade:
+              type: string
+              description: Detalhamento da taxa de registro de day trade
+              example: "Taxa de Registro: R$ 0,00"
+            valorCampo:
+              type: string
+              description: Valor do campo
+              example: 0
+        tradeList:
+          type: array
+          items:
+            type: object
+            properties:
+              cV:
+                type: string
+                description: CV
+              dC:
+                type: string
+                description: DC
+              negociacao:
+                type: string
+                description: Negociação
+              obs:
+                type: string
+                description: Observação
+              prazo:
+                type: string
+                description: Prazo
+              precoAjuste:
+                type: number
+                description: Preço de ajuste
+                example: 6.91
+              precoAjusteBigDecimal:
+                type: number
+                description: Preço de ajuste em BigDecimal
+                example: 6.91
+              q:
+                type: string
+                description: Q
+              quantidade:
+                type: integer
+                description: Quantidade
+                example: 2100
+              specTitulo:
+                type: string
+                description: Especificação do título
+                example: AMER3\tON
+              tipoMercado:
+                type: string
+                description: Tipo de mercado
+                example: VISTA
+              valorOperacao:
+                type: number
+                description: Valor da operação
+                example: 11111.0
+              valorOperacaoBigDecimal:
+                type: number
+                description: Valor da operação em BigDecimal
+                example: 1111.0

@@ -1,0 +1,230 @@
+openapi: 3.0.1
+info:
+  title: Informações sobre a posição do seguro de vida.
+  description: Api responsável por buscar informações sobre a posição do seguro de
+    vida.
+  version: 3.1.1.1
+servers:
+  - url: https://api.btgpactual.com/iaas-life-insurance
+paths:
+  /api/v1/life-insurance/{accountNumber}:
+    get:
+      tags:
+      - get-life-insurance-by-account
+      description: |
+        API responsável por buscar informações do seguro de vida.
+        
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      operationId: getLifeInsurance
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta.
+
+            *Exemplo:* `001234567`
+          required: true
+          schema:
+            type: string
+          in: path
+      responses:
+        "200":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LifeInsuranceResponse'
+        "401":
+          description: Requisição não autorizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        "400":
+          description: Erro nos parâmetros da requisição
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        "404":
+          description: Sem resultado na requisição.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+components:
+  schemas:
+    Apolice:
+      type: object
+      properties:
+        numero:
+          type: string
+          description: Número da Apólice
+          example: "012345678"
+        dataEmissaoApolice:
+          type: string
+          description: Data de emissão da apólice
+          format: string
+          example: '2020-01-01'
+        totalCapitalSegurado:
+          type: number
+          description: Valor total do capital segurado da apólice
+          format: double
+          example: 1234567.0123
+        periodicidade:
+          type: string
+          description: Periodicidade da apólice
+          example: Mensal
+        pagamentos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pagamento'
+        coberturas:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cobertura'
+        statusApoliceCod:
+          type: string
+          description: Código de status da apólice
+          example: "1"
+        statusApoliceDesc:
+          type: string
+          description: Descrição de status da apólice
+          example: Ativa
+        seguradora:
+          type: string
+          description: Seguradora da apólice
+          example: Teste
+      description: Apolice da conta
+    Cobertura:
+      type: object
+      properties:
+        descricao:
+          type: string
+          description: Descrição da cobertura
+          example: Invalidez Teste
+        inicioVigencia:
+          type: string
+          description: Data início de vigência da cobertura
+          format: string
+          example: '2020-06-01'
+        finalVigencia:
+          type: string
+          description: Data final de vigência da cobertura
+          format: string
+          example: '2040-06-01'
+        capitalSegurado:
+          type: number
+          description: Valor do capital segurado da cobertura
+          format: double
+          example: 1234567.89
+        premio:
+          type: number
+          description: Prêmio da cobertura
+          format: double
+          example: 123.45
+        status:
+          type: string
+          description: Status da cobertura
+          example: Ativa
+      description: Informações da Cobertura da apólice
+    LifeInsuranceResponse:
+      type: object
+      properties:
+        apolices:
+          type: array
+          items:
+            $ref: '#/components/schemas/Apolice'
+        valorTotalSeguroVida:
+          type: integer
+          description: Valor total do Seguro de Vida
+          format: double
+          example: 1234567.0100000002
+    Pagamento:
+      type: object
+      properties:
+        formaPagamento:
+          type: string
+          description: Forma de pagamento
+          example: Cartão de Crédito
+        dataPagamento:
+          type: string
+          description: Data do pagamento
+          format: string
+          example: '2022-06-01'
+        dataVencimento:
+          type: string
+          description: Data de vencimento
+          format: string
+          example: '2022-06-01'
+        valor:
+          type: number
+          description: Valor do pagamento
+          format: double
+          example: 123.4599999
+        status:
+          type: string
+          description: Status do pagamento
+          example: Efetuado
+      description: Informações de Pagamento da apólice
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: '#/components/schemas/ErrorMetadata'

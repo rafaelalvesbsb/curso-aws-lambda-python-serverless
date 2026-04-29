@@ -1,0 +1,1058 @@
+openapi: 3.0.1
+info:
+  title: "API de Rentabilidade Mensal"
+  description: |
+    API de consulta de relatorio de Informação de rentabilidade mensal das contas.
+  version: 3.1.2.0
+servers:
+  - url: https://api.btgpactual.com/iaas-profitability
+paths:
+  /api/v1/profitability/monthly/customer-profitability:
+    post:
+      tags:
+        - post-monthly-customer-profitability
+      summary: Endpoint que busca a rentabilidade mensal das carteiras por período.
+      description: |
+        Endpoint responsável pela busca de relatório de Rentabilidade Mensal por parceiro, a nível carteira, filtrando por **data de referência (MM/yyyy)**.
+
+        ***Uma vez solicitado, os dados informados para o mês requisitado permanecerão estáticos por até 24 horas***
+
+        ***Poderão ser solicitados até 12 meses do relatório por dia, para o mesmo parceiro. Após isso o parceiro será notificado com a mensagem que excedeu o limite do dia.***
+
+        Se não for informado mês/ano de referência será considerado o mês/ano atual.
+
+        **Exemplo:**
+
+        Passando a data de referência: 03/2023.
+
+        A busca será referente ao início do histórico até o dia 01/03/2023.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de TIR Mensal de Conta por Parceiro (monthly-customer-profitability)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 30 por minuto
+
+        Frequência de atualização: N/A (Não se aplica)
+
+        Janela de dados: Últimos 12 meses
+
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DateFilterMonthly"
+        required: true
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/profitability/monthly/product-profitability:
+    post:
+      tags:
+        - post-monthly-product-profitability
+      summary: Endpoint que busca a rentabilidade mensal dos produtos por período
+      description: |
+        Endpoint responsável pela busca de relatório de Rentabilidade Mensal por parceiro, a nível produto, filtrando por **data de referência (MM/yyyy)**.
+
+        *Para o mercado de Crypto, alguns campos não virão preenchidos, como por exemplo, o nome do produto.* 
+
+        ***Uma vez solicitado, os dados informados para o mês requisitado permanecerão estáticos por até 24 horas***
+
+        ***Poderão ser solicitados até 12 meses do relatório por dia, para o mesmo parceiro. Após isso o parceiro será notificado com a mensagem que excedeu o limite do dia.***
+
+        Se não for informado mês/ano de referência será considerado o mês/ano atual.
+
+        **Exemplo:**
+
+        Passando a data de referência: 03/2023.
+
+        A busca será referente ao início do histórico até o dia 01/03/2023.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de TIR Mensal de Produto por Parceiro (monthly-product-profitability)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 30 por minuto
+
+        Frequência de atualização: N/A (Não se aplica)
+
+        Janela de dados: Últimos 12 meses
+
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DateFilterMonthly"
+        required: true
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+  /api/v1/profitability/monthly/strategy-profitability:
+    post:
+      tags:
+        - post-monthly-strategy-profitability
+      summary: Endpoint que busca a rentabilidade mensal por estratégia e período
+      description: |
+        Endpoint responsável pela busca de relatório de Rentabilidade Mensal por parceiro, a nível de estratégia, filtrando por **data de referência (MM/yyyy)**.
+
+        *Para o mercado de Crypto, alguns campos não virão preenchidos, como por exemplo, o nome do produto.* 
+
+        ***Uma vez solicitado, os dados informados para o mês requisitado permanecerão estáticos por até 24 horas***
+
+        ***Poderão ser solicitados até 12 meses do relatório por dia, para o mesmo parceiro. Após isso o parceiro será notificado com a mensagem que excedeu o limite do dia.***
+
+        Se não for informado mês/ano de referência será considerado o mês/ano atual.
+
+        **Exemplo:**
+
+        Passando a data de referência: 03/2023.
+
+        A busca será referente ao início do histórico até o dia 01/03/2023.
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de TIR Mensal de Stratégia por Parceiro (monthly-strategy-profitability)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 30 por minuto
+
+        Frequência de atualização: N/A (Não se aplica)
+
+        Janela de dados: Últimos 12 meses
+
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DateFilterMonthly"
+        required: true
+      responses:
+        "202":
+          description: Requisição recebida com sucesso.
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: "#/components/schemas/ErrorMetadata"
+    DateFilterMonthly:
+      type: object
+      properties:
+        referenceMonth:
+          type: string
+          description: reference month (MM)
+          example: "12"
+        referenceYear:
+          type: string
+          description: reference year (YYYY)
+          example: "2023"
+    ExampleResponseMonthyCustomer:
+      title: Dicionário dos dados - Webhook Rentabilidade Mensal por cliente
+      description: |
+        Dicionário de dados - API de Rentabilidade Mensal por cliente
+
+        Este é o dicionário de dados com os possíveis valores de retorno.
+        O arquivo final terá formato .CSV com os seguintes campos:
+        ---
+      properties:
+        cod_carteira:
+          type: string
+          description: Número da conta do cliente
+          example: "001234567"
+        reference_date:
+          type: string
+          format: date
+          pattern: "yyyy-MM-dd"
+          description: Data referência
+          example: "2023-01-01"
+        reference_month:
+          type: string
+          format: date
+          pattern: "yyyy-MM-dd"
+          description: Mês de referência
+          example: "2023-01-01"
+        auc_end:
+          type: number
+          description: AuC da carteira no ultimo dia do mês.
+          example: 16460.3
+        inflow_and_outflow:
+          type: number
+          description: Valor de entrada - Valor de saída.
+          example: 2.18
+        taxes_paid_mtd:
+          type: number
+          description: Taxas Pagas no mês.
+          example: 29.85
+        taxes_paid_ytd:
+          type: number
+          description: Taxas Pagas no Ano.
+          example: 375.2
+        taxes_paid_3m:
+          type: number
+          description: Taxas Pagas nos Últimos 3 meses.
+          example: 61.04
+        taxes_paid_6m:
+          type: number
+          description: Taxas Pagas nos Últimos 6 meses.
+          example: 123.21
+        taxes_paid_12m:
+          type: number
+          description: Taxas Pagas nos Últimos 12 meses.
+          example: 166.36
+        taxes_paid_ttd:
+          type: number
+          description: Taxas Pagas Total.
+          example: 220.34
+        profit_mtd:
+          type: number
+          description: Lucro no Mês.
+          example: 6867.86
+        profit_ytd:
+          type: number
+          description: Lucro no Ano.
+          example: 11905.57
+        profit_3m:
+          type: number
+          description: Lucro dos últimos 3 meses retroativos de acordo com o campo reference_month.
+          example: 5654.27
+        profit_6m:
+          type: number
+          description: Lucro dos últimos 6 meses retroativos de acordo com o campo reference_month.
+          example: 3535.91
+        profit_12m:
+          type: number
+          description: Lucro dos últimos 12 meses retroativos de acordo com o campo reference_month.
+          example: 2994.19
+        profit_ttd:
+          type: number
+          description: Lucro desde o momento que a conta foi aberta.
+          example: 6986.2018
+        profit_client_curve_mtd:
+          type: number
+          description: Lucro no Mês, na curva cliente.
+          example: 6867.86
+        profit_client_curve_ytd:
+          type: number
+          description: Lucro no Ano, na curva cliente.
+          example: 11905.57
+        profit_client_curve_3m:
+          type: number
+          description: Lucro dos últimos 3 meses retroativos de acordo com o campo reference_month, na curva cliente.
+          example: 5654.27
+        profit_client_curve_6m:
+          type: number
+          description: Lucro dos últimos 6 meses retroativos de acordo com o campo reference_month, na curva cliente.
+          example: 3535.91
+        profit_client_curve_12m:
+          type: number
+          description: Lucro dos últimos 12 meses retroativos de acordo com o campo reference_month, na curva cliente.
+          example: 2994.19
+        profit_client_curve_ttd:
+          type: number
+          description: Lucro desde o momento que a conta foi aberta, na curva cliente.
+          example: 6986.2018
+        profit_market_curve_mtd:
+          type: number
+          description: Lucro no Mês, na curva mercado.
+          example: 6867.86
+        profit_market_curve_ytd:
+          type: number
+          description: Lucro no Ano, na curva mercado.
+          example: 11905.57
+        profit_market_curve_3m:
+          type: number
+          description: Lucro dos últimos 3 meses retroativos de acordo com o campo reference_month, na curva mercado.
+          example: 5654.27
+        profit_market_curve_6m:
+          type: number
+          description: Lucro dos últimos 6 meses retroativos de acordo com o campo reference_month, na curva mercado.
+          example: 3535.91
+        profit_market_curve_12m:
+          type: number
+          description: Lucro dos últimos 12 meses retroativos de acordo com o campo reference_month, na curva mercado.
+          example: 2994.19
+        profit_market_curve_ttd:
+          type: number
+          description: Lucro desde o momento que a conta foi aberta, na curva mercado.
+          example: 6986.2018
+        profitability_mtd:
+          type: number
+          description: Rentabilidade no Mês.
+          example: 0.064871103
+        profitability_ytd:
+          type: number
+          description: Rentabilidade no Ano.
+          example: 0.269662921
+        profitability_3m:
+          type: number
+          description: Rentabilidade dos últimos 3 meses retroativos de acordo com o campo reference_month.
+          example: 0.153061224
+        profitability_6m:
+          type: number
+          description: Rentabilidade dos últimos 6 meses retroativos de acordo com o campo reference_month.
+          example: 0.066037736
+        profitability_12m:
+          type: number
+          description: Rentabilidade dos últimos 12 meses retroativos de acordo com o campo reference_month.
+          example: 0.269662921
+        profitability_24m:
+          type: number
+          description: Rentabilidade dos últimos 24 meses retroativos de acordo com o campo reference_month.
+          example: 0.269662921
+        profitability_36m:
+          type: number
+          description: Rentabilidade dos últimos 36 meses retroativos de acordo com o campo reference_month.
+          example: 0.269662921
+        profitability_ttd:
+          type: number
+          description: Rentabilidade desde o momento que a conta foi aberta.
+          example: 0.13
+        profitability_client_curve_mtd:
+          type: number
+          description: Rentabilidade no Mês, na curva cliente.
+          example: 0.11737514
+        profitability_client_curve_ytd:
+          type: number
+          description: Rentabilidade no Ano, na curva cliente.
+          example: 0.11737514
+        profitability_client_curve_3m:
+          type: number
+          description: Rentabilidade dos últimos 3 meses retroativos de acordo com o campo reference_month, na curva cliente.
+          example: 0.11737514
+        profitability_client_curve_6m:
+          type: number
+          description: Rentabilidade dos últimos 6 meses retroativos de acordo com o campo reference_month, na curva cliente.
+          example: 0.11737514
+        profitability_client_curve_12m:
+          type: number
+          description: Rentabilidade dos últimos 12 meses retroativos de acordo com o campo reference_month, na curva cliente.
+          example: 0.11737514
+        profitability_client_curve_24m:
+          type: number
+          description: Rentabilidade dos últimos 24 meses retroativos de acordo com o campo reference_month, na curva cliente.
+          example: 0.11737514
+        profitability_client_curve_36m:
+          type: number
+          description: Rentabilidade dos últimos 36 meses retroativos de acordo com o campo reference_month, na curva cliente.
+          example: 0.11737514
+        profitability_client_curve_ttd:
+          type: number
+          description: Rentabilidade desde o momento que a conta foi aberta, na curva cliente.
+          example: 0.11737514
+        profitability_market_curve_mtd:
+          type: number
+          description: Rentabilidade no Mês, na curva mercado.
+          example: 0.11737514
+        profitability_market_curve_ytd:
+          type: number
+          description: Rentabilidade no Ano, na curva mercado.
+          example: 0.11737514
+        profitability_market_curve_3m:
+          type: number
+          description: Rentabilidade dos últimos 3 meses retroativos de acordo com o campo reference_month, na curva mercado.
+          example: 0.11737514
+        profitability_market_curve_6m:
+          type: number
+          description: Rentabilidade dos últimos 6 meses retroativos de acordo com o campo reference_month, na curva mercado.
+          example: 0.11737514
+        profitability_market_curve_12m:
+          type: number
+          description: Rentabilidade dos últimos 12 meses retroativos de acordo com o campo reference_month, na curva mercado.
+          example: 0.11737514
+        profitability_market_curve_24m:
+          type: number
+          description: Rentabilidade dos últimos 24 meses retroativos de acordo com o campo reference_month, na curva mercado.
+          example: 0.11737514
+        profitability_market_curve_36m:
+          type: number
+          description: Rentabilidade dos últimos 36 meses retroativos de acordo com o campo reference_month, na curva mercado.
+          example: 0.11737514
+        profitability_market_curve_ttd:
+          type: number
+          description: Rentabilidade desde o momento que a conta foi aberta, na curva mercado.
+          example: 0.11737514
+        cdi_mtd:
+          type: number
+          description: CDI no mês.
+          example: 0.008945248
+        cdi_ytd:
+          type: number
+          description: CDI no ano.
+          example: 0.130394345
+        cdi_3m:
+          type: number
+          description: CDI dos últimos 3 meses retroativos de acordo com o campo reference_month.
+          example: 0.028344164
+        cdi_6m:
+          type: number
+          description: CDI dos últimos 6 meses retroativos de acordo com o campo reference_month.
+          example: 0.061417646
+        cdi_12m:
+          type: number
+          description: CDI dos últimos 12 meses retroativos de acordo com o campo reference_month.
+          example: 0.128912372
+        cdi_ttd:
+          type: number
+          description: CDI Total, até o dia referente.
+          example: 0.217994365
+        dolar_mtd:
+          type: number
+          description: Dólar no mês
+          example: -0.019088533
+        dolar_ytd:
+          type: number
+          description: Dólar no ano
+          example: -0.019088533
+        dolar_3m:
+          type: number
+          description: Dólar dos últimos 3 meses retroativos de acordo com o campo reference_month.
+          example: -0.033213501
+        dolar_6m:
+          type: number
+          description: Dólar dos últimos 6 meses retroativos de acordo com o campo reference_month.
+          example: 0.004461321
+        dolar_12m:
+          type: number
+          description: Dólar dos últimos 12 meses retroativos de acordo com o campo reference_month.
+          example: -0.072254058
+        dolar_ttd:
+          type: number
+          description: Dólar Total, até o dia referente.
+          example: 0.0252245
+        ibovespa_mtd:
+          type: number
+          description: Ibovespa no mês.
+          example: 0.053829103
+        ibovespa_ytd:
+          type: number
+          description: Ibovespa no ano.
+          example: 0.22281614
+        ibovespa_3m:
+          type: number
+          description: Ibovespa dos últimos 3 meses retroativos de acordo com o campo reference_month
+          example: 0.151160677
+        ibovespa_6m:
+          type: number
+          description: Ibovespa dos últimos 6 meses retroativos de acordo com o campo reference_month
+          example: 0.136325252
+        ibovespa_12m:
+          type: number
+          description: Ibovespa dos últimos 12 meses retroativos de acordo com o campo reference_month.
+          example: 0.22281614
+        ibovespa_ttd:
+          type: number
+          description: Ibovespa Total, até o dia referente.
+          example: 0.208526434
+        ipca_mtd:
+          type: number
+          description: IPCA no mês.
+          example: 0.00157561
+        ipca_ytd:
+          type: number
+          description: IPCA no ano.
+          example: 0.042024224
+        ipca_3m:
+          type: number
+          description: IPCA dos últimos 3 meses retroativos de acordo com o campo reference_month.
+          example: 0.042024224
+        ipca_6m:
+          type: number
+          description: IPCA dos últimos 6 meses retroativos de acordo com o campo reference_month.
+          example: 0.042024224
+        ipca_12m:
+          type: number
+          description: IPCA dos últimos 12 meses retroativos de acordo com o campo reference_month.
+          example: 0.042024224
+        ipca_ttd:
+          type: number
+          description: IPCA Total, até o dia referente.
+          example: 0.042024224
+        ifix_mtd:
+          type: number
+          description: IFIX no mês.
+          example: 0.042024224
+        ifix_ytd:
+          type: number
+          description: IFIX no ano.
+          example: 0.042024224
+        ifix_3m:
+          type: number
+          description: IFIX dos últimos 3 meses retroativos de acordo com o campo reference_month.
+          example: 0.042024224
+        ifix_6m:
+          type: number
+          description: IFIX dos últimos 6 meses retroativos de acordo com o campo reference_month.
+          example: 0.042024224
+        ifix_12m:
+          type: number
+          description: IFIX dos últimos 12 meses retroativos de acordo com o campo reference_month.
+          example: 0.042024224
+        ifix_ttd:
+          type: number
+          description: IFIX Total, até o dia referente.
+          example: 0.042024224
+        imab_mtd:
+          type: number
+          description: IMAB no mês.
+          example: 0
+        imab_ytd:
+          type: number
+          description: IMAB no ano.
+          example: 0.11737514
+        imab_3m:
+          type: number
+          description: IMAB dos últimos 3 meses retroativos de acordo com o campo reference_month.
+          example: 0.11737514
+        imab_6m:
+          type: number
+          description: IMAB dos últimos 6 meses retroativos de acordo com o campo reference_month.
+          example: 0.11737514
+        imab_12m:
+          type: number
+          description: IMAB dos últimos 12 meses retroativos de acordo com o campo reference_month.
+          example: 0.11737514
+        imab_ttd:
+          type: number
+          description: IMAB Total, até o dia referente.
+          example: 0.11737514
+        volatility_mtd:
+          type: number
+          description: Volatilidade no mês.
+          example: 0.11737514
+        volatility_ytd:
+          type: number
+          description: Volatilidade no ano.
+          example: 0.11737514
+        volatility_3m:
+          type: number
+          description: Volatilidade dos últimos 3 meses retroativos de acordo com o campo reference_month.
+          example: 0.11737514
+        volatility_6m:
+          type: number
+          description: Volatilidade dos últimos 6 meses retroativos de acordo com o campo reference_month.
+          example: 0.11737514
+        volatility_12m:
+          type: number
+          description: Volatilidade dos últimos 12 meses retroativos de acordo com o campo reference_month.
+          example: 0.11737514
+        volatility_ttd:
+          type: number
+          description: Volatilidade Total, até o dia referente.
+          example: 0.11737514
+        has_anomaly_profitability_mtd:
+          type: string
+          description: Flag indicando se houve anormalidade no mês.
+          example: "false"
+        has_anomaly_profitability_ytd:
+          type: string
+          description: Flag indicando se houve anormalidade no ano.
+          example: "false"
+        has_anomaly_profitability_3m:
+          type: string
+          description: Flag indicando se houve anormalidade nos últimos 3 meses retroativos.
+          example: "false"
+        has_anomaly_profitability_6m:
+          type: string
+          description: Flag indicando se houve anormalidade nos últimos 6 meses retroativos.
+          example: "false"
+        has_anomaly_profitability_12m:
+          type: string
+          description: Flag indicando se houve anormalidade nos últimos 12 meses retroativos.
+          example: "false"
+        has_anomaly_profitability_24m:
+          type: string
+          description: Flag indicando se houve anormalidade nos últimos 24 meses retroativos.
+          example: "false"
+        has_anomaly_profitability_36m:
+          type: string
+          description: Flag indicando se houve anormalidade nos últimos 36 meses retroativos.
+          example: "false"
+        has_anomaly_profitability_ttd:
+          type: string
+          description: Flag indicando se houve anormalidade no valor total, até o dia referente.
+          example: "false"
+        retroactive_months_quantity:
+          type: number
+          description: Quantidade de meses retroativos.
+          example: 20
+        sharpe_mtd:
+          type: number
+          description: Sharpe no mês.
+          example: 0.633802078
+        sharpe_ytd:
+          type: number
+          description: Sharpe no ano.
+          example: 0.633802078
+        sharpe_3m:
+          type: number
+          description: Sharpe dos últimos 3 meses retroativos de acordo com o campo reference_month.
+          example: 0.633802078
+        sharpe_6m:
+          type: number
+          description: Sharpe dos últimos 6 meses retroativos de acordo com o campo reference_month.
+          example: 0.633802078
+        sharpe_12m:
+          type: number
+          description: Sharpe dos últimos 12 meses retroativos de acordo com o campo reference_month.
+          example: 0.633802078
+        sharpe_ttd:
+          type: number
+          description: Sharpe Total, até o dia referente.
+          example: 0.633802078
+        write_timestamp:
+          type: string
+          description: Data e hora de escrita do dado.
+          example: 00:51.0
+    ExampleResponseMonthyProduct:
+      title: Dicionário dos dados - Webhook Rentabilidade Mensal por Produto
+      description: |
+        Dicionário de dados - API de Rentabilidade Mensal por Produto
+
+        Este é o dicionário de dados com os possíveis valores de retorno.
+        O arquivo final terá formato .CSV com os seguintes campos:
+        ---
+      properties:
+        cod_carteira:
+          type: string
+          description: Número da conta do cliente
+          example: "001234567"
+        reference_month:
+          type: string
+          format: date
+          pattern: "MM-dd-yyyy"
+          description: Mês de referência
+          example: "9/1/2023"
+        product_id:
+          type: number
+          description: Id de produto
+          example: 111111111
+        product_name:
+          type: string
+          description: Nome do produto
+          example: "PRODUCT NAME"
+        product_cnpj:
+          type: string
+          description: CNPJ do produto
+          example: "11122233300014"
+        market_id:
+          type: string
+          description: Mercado
+          example: "RF"
+        auc_end:
+          type: number
+          description: AuC da carteira no último dia do mês
+          example: 112233.44
+        inflow_and_outflow:
+          type: number
+          description: Valor de entrada/saída
+          example: -112233.44
+        taxes_paid:
+          type: number
+          description: Taxas pagas no mês referente
+          example: 0
+        profit_mtd:
+          type: number
+          description: Lucro no mês referente
+          example: 1122.33
+        profit_ytd:
+          type: number
+          description: Lucro no ano referente
+          example: 1122.33
+        profit_3m:
+          type: number
+          description: Valor da Rentabilidade dos últimos 3 meses
+          example: 1122.33
+        profit_6m:
+          type: number
+          description: Valor da Rentabilidade dos últimos 6 meses
+          example: 1122.33
+        profit_12m:
+          type: number
+          description: Valor da Rentabilidade dos últimos 12 meses
+          example: 1122.33
+        profit_ttd:
+          type: number
+          description: Valor da Rentabilidade total, até o dia referente
+          example: 1122.33
+        profit_client_curve_mtd:
+          type: number
+          description: Lucro no mês referente, na curva cliente
+          example: 1122.33
+        profit_client_curve_ytd:
+          type: number
+          description: Lucro no ano referente, na curva cliente
+          example: 1122.33
+        profit_client_curve_3m:
+          type: number
+          description: Valor da Rentabilidade dos últimos 3 meses, na curva cliente
+          example: 1122.33
+        profit_client_curve_6m:
+          type: number
+          description: Valor da Rentabilidade dos últimos 6 meses, na curva cliente
+          example: 1122.33
+        profit_client_curve_12m:
+          type: number
+          description: Valor da Rentabilidade dos últimos 12 meses, na curva cliente
+          example: 1122.33
+        profit_client_curve_ttd:
+          type: number
+          description: Valor da Rentabilidade total, até o dia referente, na curva cliente
+          example: 1122.33
+        profit_market_curve_mtd:
+          type: number
+          description: Lucro no mês referente, na curva mercado
+          example: 1122.33
+        profit_market_curve_ytd:
+          type: number
+          description: Lucro no ano referente, na curva mercado
+          example: 1122.33
+        profit_market_curve_3m:
+          type: number
+          description: Valor da Rentabilidade dos últimos 3 meses, na curva mercado
+          example: 1122.33
+        profit_market_curve_6m:
+          type: number
+          description: Valor da Rentabilidade dos últimos 6 meses, na curva mercado
+          example: 1122.33
+        profit_market_curve_12m:
+          type: number
+          description: Valor da Rentabilidade dos últimos 12 meses, na curva mercado
+          example: 1122.33
+        profit_market_curve_ttd:
+          type: number
+          description: Valor da Rentabilidade total, até o dia referente, na curva mercado
+          example: 1122.33
+        profitability_mtd:
+          type: number
+          description: Porcentagem da Rentabilidade do mês referente
+          example: 0.012345678
+        profitability_ytd:
+          type: number
+          description: Porcentagem da Rentabilidade no ano referente
+          example: 0.012345678
+        profitability_3m:
+          type: number
+          description: Porcentagem da Rentabilidade dos últimos 3 meses, referente ao campo reference_month
+          example: 0.012345678
+        profitability_6m:
+          type: number
+          description: Porcentagem da Rentabilidade dos últimos 6 meses, referente ao campo reference_month
+          example: 0.012345678
+        profitability_12m:
+          type: number
+          description: Porcentagem da Rentabilidade dos últimos 12 meses, referente ao campo reference_month
+          example: 0.012345678
+        profitability_ttd:
+          type: number
+          description: Porcentagem da Rentabilidade total, até o dia referente
+          example: 0.13
+        profitability_client_curve_mtd:
+          type: number
+          description: Porcentagem da Rentabilidade do mês referente, na curva cliente
+          example: 0.012345678
+        profitability_client_curve_ytd:
+          type: number
+          description: Porcentagem da Rentabilidade no ano referente, na curva cliente
+          example: 0.012345678
+        profitability_client_curve_3m:
+          type: number
+          description: Porcentagem da Rentabilidade dos últimos 3 meses, referente ao campo reference_month, na curva cliente
+          example: 0.012345678
+        profitability_client_curve_6m:
+          type: number
+          description: Porcentagem da Rentabilidade dos últimos 6 meses, referente ao campo reference_month, na curva cliente
+          example: 0.012345678
+        profitability_client_curve_12m:
+          type: number
+          description: Porcentagem da Rentabilidade dos últimos 12 meses, referente ao campo reference_month, na curva cliente
+          example: 0.012345678
+        profitability_client_curve_ttd:
+          type: number
+          description: Porcentagem da Rentabilidade total, até o dia referente, na curva cliente
+          example: 0.13
+        profitability_market_curve_mtd:
+          type: number
+          description: Porcentagem da Rentabilidade do mês referente, na curva mercado
+          example: 0.012345678
+        profitability_market_curve_ytd:
+          type: number
+          description: Porcentagem da Rentabilidade no ano referente, na curva mercado
+          example: 0.012345678
+        profitability_market_curve_3m:
+          type: number
+          description: Porcentagem da Rentabilidade dos últimos 3 meses, referente ao campo reference_month, na curva mercado
+          example: 0.012345678
+        profitability_market_curve_6m:
+          type: number
+          description: Porcentagem da Rentabilidade dos últimos 6 meses, referente ao campo reference_month, na curva mercado
+          example: 0.012345678
+        profitability_market_curve_12m:
+          type: number
+          description: Porcentagem da Rentabilidade dos últimos 12 meses, referente ao campo reference_month, na curva mercado
+          example: 0.012345678
+        profitability_market_curve_ttd:
+          type: number
+          description: Porcentagem da Rentabilidade total, até o dia referente, na curva mercado
+          example: 0.13
+        product_key:
+          type: string
+          description: Código do produto
+          example: "RF##000000011223344#"
+        write_timestamp:
+          type: string
+          description: Data e hora do registro
+          example: 43:30.5
+    ExampleResponseMonthyStrategy:
+      title: Dicionário dos dados - Webhook Rentabilidade Mensal por Estratégia
+      description: |
+        Dicionário de dados - API de Rentabilidade Mensal por Estratégia
+
+        Este é o dicionário de dados com os possíveis valores de retorno.
+        O arquivo final terá formato .CSV com os seguintes campos:
+        ---
+      properties:
+        cod_carteira:
+          type: string
+          description: Número da conta do cliente
+          example: "001234567"
+        asset_allocation_strategy:
+          type: string
+          description: Estratégia da rentabilidade
+          example: "Renda Variável"
+        reference_month:
+          type: string
+          format: date
+          pattern: "MM-dd-yyyy"
+          description: Mês de referência
+          example: "9/1/2023"
+        auc_end:
+          type: number
+          description: AuC da carteira no último dia do mês
+          example: 112233.44
+        inflow_and_outflow:
+          type: number
+          description: Valor de entrada/saída
+          example: -112233.44
+        taxes_paid:
+          type: number
+          description: Taxas pagas no mês referente
+          example: 0
+        profit_mtd:
+          type: number
+          description: Lucro no mês referente
+          example: 1122.33
+        profit_ytd:
+          type: number
+          description: Lucro no ano referente
+          example: 1122.33
+        profit_3m:
+          type: number
+          description: Valor da Rentabilidade dos últimos 3 meses
+          example: 1122.33
+        profit_6m:
+          type: number
+          description: Valor da Rentabilidade dos últimos 6 meses
+          example: 1122.33
+        profit_12m:
+          type: number
+          description: Valor da Rentabilidade dos últimos 12 meses
+          example: 1122.33
+        profit_ttd:
+          type: number
+          description: Valor da Rentabilidade total, até o dia referente
+          example: 1122.33
+        profitability_mtd:
+          type: number
+          description: Porcentagem da Rentabilidade do mês referente
+          example: 0.012345678
+        profitability_ytd:
+          type: number
+          description: Porcentagem da Rentabilidade no ano referente
+          example: 0.012345678
+        profitability_3m:
+          type: number
+          description: Porcentagem da Rentabilidade dos últimos 3 meses, referente ao campo reference_month
+          example: 0.012345678
+        profitability_6m:
+          type: number
+          description: Porcentagem da Rentabilidade dos últimos 6 meses, referente ao campo reference_month
+          example: 0.012345678
+        profitability_12m:
+          type: number
+          description: Porcentagem da Rentabilidade dos últimos 12 meses, referente ao campo reference_month
+          example: 0.012345678
+        profitability_ttd:
+          type: number
+          description: Porcentagem da Rentabilidade total, até o dia referente
+          example: 0.13
+        write_timestamp:
+          type: string
+          description: Data e hora do registro
+          example: 43:30.5

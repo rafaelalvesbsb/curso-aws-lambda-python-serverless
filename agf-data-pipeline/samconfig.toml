@@ -1,0 +1,30 @@
+version = 0.1
+
+# ============================================================
+# DEFAULT (production / template.yaml)
+# ============================================================
+[default.build.parameters]
+use_container = true
+
+[default.deploy.parameters]
+stack_name     = "agfi-data-pipeline"
+region         = "us-east-2"
+confirm_changeset = true
+capabilities   = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]
+
+# ============================================================
+# LOCAL (LocalStack / template-local.yaml)
+# ============================================================
+[local.build.parameters]
+template      = "template.yaml"
+build_dir     = ".aws-sam/build-local"
+use_container = false  # Python puro — não precisa de container para cross-compile
+
+[local.deploy.parameters]
+template_file = ".aws-sam/build-local/template.yaml"
+stack_name    = "agfi-lambda-dev"
+region        = "us-east-2"
+confirm_changeset = false
+capabilities  = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]
+s3_bucket     = "agfi-sam-artifacts"
+s3_prefix     = "agfi-lambda-dev"

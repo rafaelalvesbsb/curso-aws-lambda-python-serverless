@@ -1,0 +1,844 @@
+openapi: 3.0.1
+info:
+  title: API de Posição Open Finance
+  description: API de consulta de Posições de open finance.
+  version: 3.1.4.0
+servers:
+  - url: https://api.btgpactual.com/iaas-investment-consolidation
+paths:
+  /api/v1/open-finance/position/{accountNumber}:
+    get:
+      tags:
+        - get-open-finance-position-by-account
+      description: |
+        Recupera em tempo real o resumo de investimento Open Finance de uma conta
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: D0
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: account_number
+          description: |
+            Número da conta para buscar resumo da posição.
+
+            *Exemplo:* `000123456`
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        "200":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenFinancePositionDTO"
+        "401":
+          description: Requisição não autorizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "400":
+          description: Erro nos parâmetros da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "404":
+          description: Sem resultado na requisição.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+    post:
+      tags:
+        - post-open-finance-position-by-account-and-date
+      description: |
+        Recupera em tempo real o resumo de investimento Open Finance de uma conta na data informada.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: account_number
+          description: |
+            Número da conta para buscar resumo da posição.
+
+            *Exemplo:* `000123456`
+          schema:
+            type: string
+          in: path
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PositionFilterDTO"
+        required: true
+      responses:
+        "200":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenFinancePositionDTO"
+        "401":
+          description: Requisição não autorizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "400":
+          description: Erro nos parâmetros da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "404":
+          description: Sem resultado na requisição.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: number
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: "#/components/schemas/ErrorMetadata"
+    OpenFinancePositionDTO:
+      type: object
+      description: Dados consolidados da posição Open Finance de uma conta.
+      properties:
+        accountNumber:
+          type: string
+          description: Número da conta do cliente.
+          example: "001234567"
+        documentNumber:
+          type: string
+          description: Número do documento do titular da conta.
+          example: "12345678900"
+        positionDate:
+          type: string
+          format: date-time
+          description: Data da posição.
+          example: "2025-07-01T00:00:00"
+        eventCreateDate:
+          type: string
+          format: date-time
+          description: Data de criação do evento.
+          example: "2025-07-16T16:24:50.783"
+        consolidateDate:
+          type: string
+          format: date-time
+          description: Data de consolidação da posição.
+          example: "2025-07-01T08:42:14.916141Z"
+        isBlocked:
+          type: boolean
+          description: Indica se a conta está bloqueada.
+          example: false
+        hasConsent:
+          type: boolean
+          description: Indica se há consentimento do cliente.
+          example: true
+        offShoreAccountNumber:
+          type: string
+          description: Número da conta offshore, se houver.
+          example: ""
+        summaryAccounts:
+          type: array
+          description: Lista de resumos das contas por instituição.
+          items:
+            $ref: "#/components/schemas/SummaryAccount"
+        institutions:
+          type: array
+          description: Lista de instituições relacionadas à conta.
+          items:
+            $ref: "#/components/schemas/Institution"
+        investments:
+          type: array
+          description: Lista de investimentos da conta.
+          items:
+            $ref: "#/components/schemas/Investment"
+        summaryInstitutions:
+          $ref: "#/components/schemas/SummaryInstitutions"
+        balances:
+          type: array
+          description: Saldos consolidados por moeda.
+          items:
+            $ref: "#/components/schemas/Balance"
+        ptaxPricing:
+          $ref: "#/components/schemas/PtaxPricing"
+        summaryBalances:
+          $ref: "#/components/schemas/SummaryBalances"
+      required:
+        - accountNumber
+        - documentNumber
+        - positionDate
+
+    SummaryAccount:
+      type: object
+      description: Resumo da posição do cliente em uma instituição.
+      properties:
+        institution:
+          $ref: "#/components/schemas/Institution"
+        markets:
+          type: array
+          description: Lista de mercados da instituição.
+          items:
+            $ref: "#/components/schemas/Market"
+        balances:
+          type: array
+          description: Saldos por moeda.
+          items:
+            $ref: "#/components/schemas/Balance"
+
+    Institution:
+      type: object
+      description: Dados da instituição financeira.
+      properties:
+        organizationId:
+          type: string
+          description: Identificador único da organização.
+          example: "uuid-1234"
+        name:
+          type: string
+          description: Nome da instituição.
+          example: "Banco Exemplo"
+        local:
+          type: string
+          description: Localização da instituição.
+          example: "OnShore"
+        cge:
+          type: integer
+          description: Código CGE da instituição.
+          example: 123456
+        isbp:
+          type: string
+          description: Código ISBP da instituição.
+          example: "12345678"
+        taxIdentification:
+          type: string
+          description: CNPJ da instituição.
+          example: "12345678000199"
+        institutionId:
+          type: string
+          description: Identificador interno da instituição.
+          example: "uuid-5678"
+        delay:
+          type: boolean
+          description: Indica se há atraso na atualização.
+          example: false
+
+    Market:
+      type: object
+      description: Dados de um mercado financeiro.
+      properties:
+        marketName:
+          type: string
+          description: Nome do mercado.
+          example: "Renda Fixa"
+        marketAbbreviation:
+          type: string
+          description: Abreviação do mercado.
+          example: "RF"
+        positionDate:
+          type: string
+          format: date-time
+          description: Data da posição.
+          example: "2025-07-01T00:00:00"
+        balances:
+          type: array
+          description: Saldos por moeda.
+          items:
+            $ref: "#/components/schemas/Balance"
+
+    Balance:
+      type: object
+      description: Saldo em uma determinada moeda.
+      properties:
+        currency:
+          type: string
+          description: Código da moeda.
+          example: "BRL"
+        totalAmount:
+          type: number
+          format: double
+          description: Valor total na moeda.
+          example: 100000.00
+
+    Investment:
+      type: object
+      description: Investimentos da conta em uma instituição.
+      properties:
+        institution:
+          $ref: "#/components/schemas/Institution"
+        investmentFund:
+          type: array
+          description: Lista de fundos de investimento.
+          items:
+            $ref: "#/components/schemas/InvestmentFund"
+        fixedIncome:
+          type: array
+          description: Lista de investimentos em renda fixa.
+          items:
+            $ref: "#/components/schemas/FixedIncome"
+        equities:
+          type: array
+          description: Lista de investimentos em renda variável.
+          items:
+            $ref: "#/components/schemas/Equities"
+        cash:
+          type: array
+          description: Lista de saldos em dinheiro.
+          items:
+            $ref: "#/components/schemas/Cash"
+
+    InvestmentFund:
+      type: object
+      description: Dados de um fundo de investimento.
+      properties:
+        shareValue:
+          type: number
+          format: double
+          description: Valor da cota do fundo.
+          example: 1.23
+        fund:
+          $ref: "#/components/schemas/Fund"
+        blocked:
+          type: boolean
+          description: Indica se o fundo está bloqueado.
+          example: false
+        acquisition:
+          type: array
+          description: Lista de aquisições do fundo.
+          items:
+            $ref: "#/components/schemas/Acquisition"
+        acquisitionUsufruct:
+          type: array
+          description: Lista de aquisições de usufruto.
+          items:
+            type: object
+        collateral:
+          type: array
+          description: Lista de colaterais do fundo.
+          items:
+            type: object
+        cotaCetipadaFundoExterno:
+          type: boolean
+          description: Indica se é cota cetipada de fundo externo.
+          example: false
+        positionDate:
+          type: string
+          format: date-time
+          description: Data da posição do fundo.
+          example: "2025-06-30T00:00:00"
+        processingDateTime:
+          type: string
+          format: date-time
+          description: Data/hora de processamento.
+          example: "2025-07-01T06:26:23.8393297-03:00"
+        dateLastPositionUpdate:
+          type: string
+          format: date-time
+          description: Data/hora da última atualização da posição.
+          example: "2025-06-30T21:00:59.763182"
+        isOpenFinance:
+          type: boolean
+          description: Indica se é posição Open Finance.
+          example: true
+        openFinanceKey:
+          type: string
+          description: Chave Open Finance.
+          example: "uuid-OpenFinanceKey"
+        openFinanceInvestmentId:
+          type: string
+          description: ID do investimento Open Finance.
+          example: "uuid-InvestmentId"
+        assetProduct:
+          $ref: "#/components/schemas/AssetProduct"
+        useAcquisition:
+          type: boolean
+          description: Indica se utiliza aquisição.
+          example: true
+        grossValue:
+          type: number
+          format: double
+          description: Valor bruto do fundo.
+          example: 0
+    Acquisition:
+      type: object
+      description: Dados de aquisição de fundo.
+      properties:
+        costPrice:
+          type: number
+          format: double
+          description: Preço de custo da aquisição.
+          example: 100.00
+        incomeTax:
+          type: number
+          format: double
+          description: Valor de imposto de renda.
+          example: 0.45
+        virtualIOF:
+          type: number
+          format: double
+          description: Valor de IOF virtual.
+          example: 0.00
+    AssetProduct:
+      type: object
+      description: Dados do produto do ativo.
+      properties:
+        strategy:
+          $ref: "#/components/schemas/Strategy"
+        identification:
+          type: object
+          description: Identificação do produto do ativo.
+          properties: {}
+    Strategy:
+      type: object
+      description: Estratégia do produto.
+      properties:
+        newStrategy:
+          type: string
+          description: Nome da nova estratégia.
+          example: "Pós-fixado"
+
+    Fund:
+      type: object
+      description: Informações do fundo de investimento.
+      properties:
+        isinCode:
+          type: string
+          description: Código ISIN do fundo.
+          example: "BR1234567890"
+        fundName:
+          type: string
+          description: Nome do fundo.
+          example: "Fundo Exemplo FIC"
+        fundCNPJCode:
+          type: string
+          description: CNPJ do fundo.
+          example: "12345678000199"
+
+    FixedIncome:
+      type: object
+      description: Dados de um investimento em renda fixa.
+      properties:
+        isOnlinePosition:
+          type: boolean
+          description: Indica se é posição online.
+          example: false
+        accountingGroupCode:
+          type: string
+          description: Código do grupo contábil.
+          example: "LCA"
+        issuer:
+          type: string
+          description: Nome do emissor.
+          example: "Banco Exemplo S.A."
+        issueDate:
+          type: string
+          format: date-time
+          description: Data de emissão do título.
+          example: "2023-04-20T00:00:00"
+        securityCode:
+          type: integer
+          description: Código do título.
+          example: 0
+        issuerCGECode:
+          type: string
+          description: Código CGE do emissor.
+          example: ""
+        priceType:
+          type: string
+          description: Tipo de preço.
+          example: ""
+        valueType:
+          type: string
+          description: Tipo de valor.
+          example: ""
+        yield:
+          type: number
+          format: double
+          description: Rendimento do título.
+          example: 0
+        ticker:
+          type: string
+          description: Ticker do ativo.
+          example: "23D01553706"
+        referenceIndexName:
+          type: string
+          description: Nome do índice de referência.
+          example: "DI"
+        referenceIndexValue:
+          type: string
+          description: Valor do índice de referência.
+          example: "DI"
+        indexYieldRate:
+          type: string
+          description: Taxa de rendimento do índice.
+          example: "95.50% do DI"
+        maturityDate:
+          type: string
+          format: date-time
+          description: Data de vencimento do título.
+          example: "2026-04-20T00:00:00"
+        quantity:
+          type: number
+          format: double
+          description: Quantidade do título.
+          example: 470662.0
+        price:
+          type: number
+          format: double
+          description: Preço unitário do título.
+          example: 1.26892958
+        grossValue:
+          type: number
+          format: double
+          description: Valor bruto do investimento.
+          example: 597236.93
+        incomeTax:
+          type: number
+          format: double
+          description: Valor de imposto de renda.
+          example: 0
+        iofTax:
+          type: number
+          format: double
+          description: Valor de IOF.
+          example: 0
+        netValue:
+          type: number
+          format: double
+          description: Valor líquido do investimento.
+          example: 597236.93
+        isBlocked:
+          type: string
+          description: Indica se está bloqueado.
+          example: "N"
+        isLiquidity:
+          type: boolean
+          description: Indica se é líquido.
+          example: false
+        collateralPosition:
+          type: string
+          description: Informação de colateral.
+          example: ""
+        acquisitions:
+          type: array
+          description: Lista de aquisições do título.
+          items:
+            type: object
+        positionDate:
+          type: string
+          format: date-time
+          description: Data da posição.
+          example: "2025-06-28T00:00:00"
+        ftsId:
+          type: integer
+          description: ID FTS.
+          example: 0
+        isRepo:
+          type: boolean
+          description: Indica se é operação de recompra.
+          example: false
+        cetipCode:
+          type: string
+          description: Código CETIP.
+          example: "23D01553706"
+        selicCode:
+          type: string
+          description: Código SELIC.
+          example: ""
+        isin:
+          type: string
+          description: Código ISIN.
+          example: ""
+        taxFree:
+          type: boolean
+          description: Indica se é isento de imposto.
+          example: false
+        issuerType:
+          type: string
+          description: Tipo do emissor.
+          example: ""
+        projection:
+          type: string
+          description: Projeção.
+          example: ""
+        lag:
+          type: string
+          description: Lag.
+          example: ""
+        default:
+          type: boolean
+          description: Indica se está em default.
+          example: false
+        yieldAvg:
+          type: number
+          format: double
+          description: Rendimento médio.
+          example: 0
+        debtEarlyTerminationSchedules:
+          type: string
+          description: Cronograma de rescisão antecipada.
+          example: ""
+        dateLastPositionUpdate:
+          type: string
+          format: date-time
+          description: Data/hora da última atualização da posição.
+          example: "2025-06-30T13:08:48.614886"
+        gracePeriodDate:
+          type: string
+          format: date-time
+          description: Data de carência.
+          example: "2023-07-20T00:00:00"
+        purchaseDate:
+          type: string
+          format: date-time
+          description: Data de compra.
+          example: "2023-04-20T00:00:00"
+        remunerationCalculation:
+          type: string
+          description: Tipo de cálculo de remuneração.
+          example: "DIAS_UTEIS"
+        remunerationRatePeriodicity:
+          type: string
+          description: Periodicidade da taxa de remuneração.
+          example: "DIARIO"
+        remunerationRateType:
+          type: string
+          description: Tipo da taxa de remuneração.
+          example: "EXPONENCIAL"
+        issueUnitPriceAmount:
+          type: number
+          format: double
+          description: Valor unitário de emissão.
+          example: 1.0
+        issueUnitPriceCurrency:
+          type: string
+          description: Moeda do valor unitário de emissão.
+          example: "BRL"
+        investmentType:
+          type: string
+          description: Tipo de investimento.
+          example: "LCA"
+        issuerInstitutionCnpjNumber:
+          type: string
+          description: CNPJ da instituição emissora.
+          example: "60701190000104"
+        issuerCnpjNumber:
+          type: string
+          description: CNPJ do emissor.
+          example: ""
+        remunerationPreFixedRate:
+          type: number
+          format: double
+          description: Taxa pré-fixada de remuneração.
+          example: 0.0
+        remunerationPostFixedIndexerPercentage:
+          type: number
+          format: double
+          description: Percentual pós-fixado do indexador.
+          example: 0.955
+        postFixedIndexerPercentage:
+          type: number
+          format: double
+          description: Percentual pós-fixado do indexador.
+          example: 0.955
+        isOpenFinance:
+          type: boolean
+          description: Indica se é posição Open Finance.
+          example: true
+        openFinanceKey:
+          type: string
+          description: Chave Open Finance.
+          example: "uuid-OpenFinanceKey"
+        openFinanceInvestmentId:
+          type: string
+          description: ID do investimento Open Finance.
+          example: "uuid-InvestmentId"
+        clearingCode:
+          type: string
+          description: Código de clearing.
+          example: "23D01553706"
+        assetProduct:
+          $ref: "#/components/schemas/AssetProduct"
+
+    Equities:
+      type: object
+      description: Dados de investimentos em renda variável.
+      properties:
+        stockPositions:
+          type: array
+          description: Lista de posições em ações.
+          items:
+            type: object
+            description: Posição em ação.
+            properties: {}
+
+    Cash:
+      type: object
+      description: Dados de saldo em dinheiro.
+      properties:
+        currentAccount:
+          type: object
+          description: Dados da conta corrente.
+          properties:
+            value:
+              type: number
+              format: double
+              description: Valor disponível.
+              example: 100.00
+            positionDate:
+              type: string
+              format: date-time
+              description: Data da posição.
+              example: "2025-07-01T00:00:00"
+
+    SummaryInstitutions:
+      type: object
+      description: Resumo dos mercados por instituição.
+      properties:
+        markets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Market"
+
+    PtaxPricing:
+      type: object
+      description: Dados de cotação PTAX.
+      properties:
+        date:
+          type: string
+          format: date
+          description: Data da cotação.
+          example: "2025-06-30"
+        priceValue:
+          type: number
+          format: double
+          description: Valor da cotação.
+          example: 5.1234
+        quoteDateTime:
+          type: string
+          format: date-time
+          description: Data/hora da cotação.
+          example: "2025-07-16T19:24:52.8046664Z"
+
+    SummaryBalances:
+      type: object
+      description: Resumo dos saldos consolidados.
+      properties:
+        allBalances:
+          type: array
+          items:
+            $ref: "#/components/schemas/Balance"
+        totalInvestments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Balance"
+        availableInvestments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Balance"
+    PositionFilterDTO:
+      required:
+        - date
+      type: object
+      properties:
+        date:
+          type: string
+          description: . the position date (YYYY-MM-DD)
+          format: date
+          example: 2022-01-30

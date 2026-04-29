@@ -1,0 +1,230 @@
+openapi: 3.0.2
+info:
+  version: 1.0.0
+  title: API de Perfil de Investimento
+  description: |
+   Para que um investidor possa efetuar investimentos é necessário antes responder
+   um questionário para definição de risco.
+   
+   Essa API fornece apenas o resultado calculado do perfil de investimento da conta informada.
+   
+   O perfil do investidor será definido como conservador, moderado ou sofisticado. 
+
+servers:
+  - url: https://api.btgpactual.com/iaas-suitability
+paths:
+  /api/v1/suitability/account/{accountNumber}:
+    get:
+      tags:
+        - get-suitability
+      summary: Busca o perfil de risco atual do investidor.
+      description: |
+        Busca o perfil de risco atual do investidor baseado no último formulário respondido.
+        
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta para buscar resumo da posição.
+            
+            Example: `001234567`
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Busca de perfil efetuada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfile'
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /api/v1/suitability/account/{accountNumber}/info:
+    get:
+      tags:
+        - get-info-suitability
+      summary: Busca o perfil e validade de risco atual do investidor.
+      description: |
+        Busca o perfil de risco atual do investidor baseado no
+        último formulário respondido e as datas de início e fim de validade.
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: accountNumber
+          description: |
+            Número da conta para buscar resumo da posição.
+            
+            Example: `001234567`
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Busca de perfil efetuada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileInfo'
+        "400":
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+components:
+  schemas:
+    CustomerProfile:
+      type: object
+      properties:
+        profileRisk:
+          $ref: '#/components/schemas/ProfileRisk'
+    CustomerProfileInfo:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Código de perfil da conta
+          example: SOPH
+        description:
+          type: string
+          description: Perfil de risco atual do investidor
+          example: SOFISTICADO
+          enum: [CONSERVADOR,MODERADO,SOFISTICADO,BALANCEADO,CRESCIMENTO,NÃO APLICÁVEL]
+        initDate:
+          type: string
+          description: Data início da validade de perfil
+          example: "2021-07-26"
+        expirationDate:
+          type: string
+          description: Data fim da validade de perfil
+          example: "2023-07-26"
+    ProfileRisk:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Código de perfil
+          example: SOPH
+        description:
+          type: string
+          description: Perfil de risco atual do investidor
+          example: SOFISTICADO
+          enum: [CONSERVADOR,MODERADO,SOFISTICADO,BALANCEADO,CRESCIMENTO,NÃO APLICÁVEL]
+      description: Perfil de risco da conta
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: '#/components/schemas/ErrorMetadata'

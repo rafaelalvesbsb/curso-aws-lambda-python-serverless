@@ -1,0 +1,197 @@
+openapi: 3.0.1
+info:
+  title: API Base de Conta
+  description: API responsável por prover lista de contas (discriminando se é tipo Fundos) e lista de contas sensíveis.
+  version: 3.1.3.0
+servers:
+  - url: https://api.btgpactual.com/api-account-base/
+paths:
+  /api/v1/account-base/accounts:
+    get:
+      tags:
+        - get-accounts-by-cge-code
+      summary: Buscar todas as contas por parceiro.
+      description: |
+        Endpoint responsável por obter uma lista com todas as contas do escritório pelo seu CGE, discriminando se é conta de tipo Fundos. 
+
+         ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        '200':
+          description: Requisição enviada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '400':
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '401':
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '403':
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /api/v1/sensitive-account/accounts:
+    get:
+      tags:
+        - get-sensitive-accounts-by-cge-code
+      summary: Buscar todas as contas sensíveis por parceiro.
+      description: |
+        Endpoint responsável por obter uma lista com todas as contas sensíveis do escritório pelo seu CGE. 
+
+         ---
+        **Características:**
+
+        Tipo de chamada: Síncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: Tempo real
+
+        Janela de dados: N/A *(Não se Aplica)*
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        '200':
+          description: Requisição efetuada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensitiveAccountResponse'
+        '400':
+          description: Header ou Body incorretos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '401':
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '403':
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+components:
+  schemas:
+    AccountBase:
+      type: object
+      properties:
+        accountNumber:
+          description: Número da conta
+          example: '123456789'
+          type: string
+        typeFund:
+          description: Flag informando se é tipo Fundos
+          example: 'false'
+          type: boolean
+    AccountResponse:
+      type: object
+      properties:
+        accounts:
+          type: array
+          description: lista de contas
+          items:
+            $ref: '#/components/schemas/AccountBase'
+    SensitiveAccount:
+      type: string
+      description: Número da conta
+      example: '001234567'
+    SensitiveAccountResponse:
+      type: object
+      properties:
+        accounts:
+          type: array
+          description: lista de contas
+          items:
+            $ref: '#/components/schemas/SensitiveAccount'
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: '#/components/schemas/ErrorMetadata'

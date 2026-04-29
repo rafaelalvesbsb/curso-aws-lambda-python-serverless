@@ -1,0 +1,229 @@
+openapi: 3.0.1
+info:
+  title: "API de Rentabilidade Diária"
+  description: |
+    API de consulta de relatorio de Informação de rentabilidade das contas
+  version: 3.1.2.0
+servers:
+  - url: https://api.btgpactual.com/iaas-profitability
+paths:
+  /api/v1/profitability/daily/product:
+    post:
+      tags:
+        - get-daily-profitability-by-product
+      summary: Endpoint que busca a rentabilidade diária por produto
+      description: |
+        Endpoint responsável pela busca de relatório de Rentabilidade diária de todas as contas por parceiro, a nível de carteira e produto.
+
+        Para consultas em meses retroativos, retorna apenas dados de ativos que foram vendidos ou liquidados durante o período consultado.
+
+        Para o mercado de Crypto, alguns campos não virão preenchidos, como por exemplo, o nome do produto. 
+
+        **Exemplo:**
+
+        Chamando o endpoint no mês de referencia 01 de 2025.
+        Logo, a busca será referente ao período de 01/01/2025 a 31/01/2025.
+
+        ***Uma vez solicitado, os dados informados referente ao mês requisitado permanecerão estáticos por 24h, porém caso for solicitado uma nova data os dados serão referentes a esse novo período.***
+
+        Pelo fato da chamada ser assíncrona, o retorno se dará via **Webhook**, que pode ser cadastrado pelo próprio portal do desenvolvedor em **Webhooks > Manutenção > Botão Cadastrar Webhook**, com nome de **Relatório de TIR Diário (daily-profitability)**. 
+
+        Sua documentação pode ser encontrada na página de Webhook. 
+
+        Caso o webhook não esteja cadastrado, será emitido um erro de forma síncrona com a seguinte mensagem:
+
+        `Webhook not registered for partner cnpj [{CNPJ}], cge [{CGE}].`
+
+        ---
+        **Características:**
+
+        Tipo de chamada: Assíncrona
+
+        Limite de requisições: 60 por minuto
+
+        Frequência de atualização: 1x ao dia, às 11h am.
+
+        Janela de Dados: D-x a D-2 até 11h am e D-x a D-1 após às 11h.
+      parameters:
+        - name: x-id-partner-request
+          description: |
+            UUID gerado randômicamente, usado para identificador cada request efetuado. 
+            Sempre utilizar um diferente para cada requisição, mesmo que sejam os mesmos parâmetros.
+
+            *Exemplo:* `5607cd68-3231-4eb7-a1f9-ed3ff854b1af`
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: access_token
+          description: |
+            Token de acesso para a API, esse deve ser gerado usando OAuth2 e Grant Type do tipo Client Credentials.
+            As credenciais podem ser obtidas pelo portal do desenvolvedor.
+
+            *Exemplo:* `eyJ0eXAiOMNSBHDBDxhUnman9u.eyJ0abdhb2F1jkGfrnmkmGFj.eyJ0sadsadsadas`
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefDateDTO"
+      responses:
+        "202":
+          description: Requisição enviada com sucesso.
+          headers:
+            x-id-pactual:
+              description: Id pactual da operação
+              style: simple
+              schema:
+                type: string
+        "401":
+          description: Requisição não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+        "403":
+          description: Erro no body da requisição
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+components:
+  schemas:
+    RefDateDTO:
+      type: object
+      properties:
+        referenceMonth:
+          type: string
+          description: Mês referência para busca de rentabilidade diária
+          example: "06"
+        referenceYear:
+          type: string
+          description: Ano referência para busca de rentabilidade diária
+          example: "2025"
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorMetadata:
+      type: object
+      properties:
+        globalErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: object
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        meta:
+          $ref: "#/components/schemas/ErrorMetadata"
+    DateFilterDaily:
+      required:
+        - refDate
+      type: object
+      properties:
+        refDate:
+          type: string
+          description: Data referência para busca de rentabilidade diária
+          format: date
+          pattern: "yyyy-MM-dd"
+          example: "2021-12-31"
+    ExampleResponse:
+      title: Dicionário dos dados - Webhook Rentabilidade diária
+      description: |
+        Dicionário de dados - API de Rentabilidade Diária
+
+        Este é o dicionário de dados com os possíveis valores de retorno.
+        O arquivo final terá formato .CSV com os seguintes campos:
+
+        ---
+      properties:
+        cod_carteira:
+          type: string
+          description: Número da conta do cliente
+          example: "001234567"
+        reference_date:
+          type: string
+          format: date
+          pattern: "yyyy-MM-dd"
+          description: Data referência da rentabilidade
+          example: "2023-01-05"
+        auc:
+          type: number
+          description: Patrimônio do cliente
+          example: 16460.3
+        profit_daily:
+          type: number
+          description: Lucro no dia, em reais (R$)
+          example: 8.0099999999984
+        profit_client_curve_daily:
+          type: number
+          description: Lucro no dia, em reais (R$), na curva cliente
+          example: 8.0099999999984
+        profit_market_curve_daily:
+          type: number
+          description: Lucro no dia, em reais (R$), na curva mercado
+          example: 8.0099999999984
+        profitability_daily:
+          type: number
+          description: Lucro no dia, em %
+          example: 0.000486862315216
+        profitability_client_curve_daily:
+          type: number
+          description: Lucro no dia, em %, na curva cliente
+          example: 0.000486862315216
+        profitability_market_curve_daily:
+          type: number
+          description: Lucro no dia, em %, na curva mercado
+          example: 0.000486862315216
+        profitability_total:
+          type: number
+          description: Lucro total até a data da rentabilidade, em %
+          example: 0.097353333333333
+        profitability_client_curve_total:
+          type: number
+          description: Lucro total até a data da rentabilidade, em %, na curva cliente
+          example: 0.097353333333333
+        profitability_market_curve_total:
+          type: number
+          description: Lucro total até a data da rentabilidade, em %, na curva mercado
+          example: 0.097353333333333
+        product_id:
+          type: string
+          description: Código do produto ou CGE
+          example: "2345678"
+        product_deal_id:
+          type: string
+          description: ID do contrato relativo ao produto/cliente
+          example: "2345678-12345678"
+        product_cnpj:
+          type: string
+          description: |
+            CNPJ do Produto. Apenas para os mercados:
+            - PV (Previdência)
+            - FN (Fundos)
+          example: 1234567000890
+        product_name:
+          type: string
+          description: Nome do produto
+          example: BTG PACTUAL
+        product_key:
+          type: string
+          description: Chave do produto, os dois primeiros caracteres são referente ao mercado
+          example: "RF##00000002345678#"

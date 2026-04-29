@@ -1,5 +1,0 @@
-{
-  "devDependencies": {
-    "serverless-s3-cleaner": "^2.0.2"
-  }
-}
