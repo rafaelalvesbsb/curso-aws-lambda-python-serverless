@@ -27,17 +27,13 @@ Parameters:
 Resources:
 
 # ==========================================
-# SQS (CRIADAS NO STACK)
+# SQS (CRIADAS PELO STACK - SEM NOME FIXO)
 # ==========================================
   SyncQueue:
     Type: AWS::SQS::Queue
-    Properties:
-      QueueName: !Sub 'agfi-sync-queue-${Environment}'
 
   SyncQueueDLQ:
     Type: AWS::SQS::Queue
-    Properties:
-      QueueName: !Sub 'agfi-sync-queue-dlq-${Environment}'
 
 # ==========================================
 # SNS
