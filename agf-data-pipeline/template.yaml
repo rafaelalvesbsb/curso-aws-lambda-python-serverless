@@ -16,18 +16,6 @@ Parameters:
     Default: dev
     AllowedValues: [dev, staging, prod]
 
-  SyncQueueArn:
-    Type: String
-    Description: ARN da fila SQS (OBRIGATÓRIO)
-
-  SyncQueueDLQArn:
-    Type: String
-    Description: ARN da DLQ (OBRIGATÓRIO)
-
-  SyncQueueName:
-    Type: String
-    Default: agfi-sync-queue-dev
-
   DataLakeBucketName:
     Type: String
     Default: agfi-data-lake-dev
@@ -37,6 +25,19 @@ Parameters:
     Default: agfi-sync-state-dev
 
 Resources:
+
+# ==========================================
+# SQS (CRIADAS NO STACK)
+# ==========================================
+  SyncQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub 'agfi-sync-queue-${Environment}'
+
+  SyncQueueDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub 'agfi-sync-queue-dlq-${Environment}'
 
 # ==========================================
 # SNS
@@ -58,7 +59,7 @@ Resources:
       Handler: webhook_receiver.lambda_handler
       Policies:
         - SQSSendMessagePolicy:
-            QueueName: !Ref SyncQueueName
+            QueueName: !GetAtt SyncQueue.QueueName
 
   BTGRequestReportFunction:
     Type: AWS::Serverless::Function
@@ -80,13 +81,13 @@ Resources:
         - S3CrudPolicy:
             BucketName: !Ref DataLakeBucketName
         - SQSPollerPolicy:
-            QueueName: !Ref SyncQueueName
+            QueueName: !GetAtt SyncQueue.QueueName
 
       Events:
         SQSEvent:
           Type: SQS
           Properties:
-            Queue: !Ref SyncQueueArn   # ✅ CORRIGIDO
+            Queue: !GetAtt SyncQueue.Arn
             BatchSize: 1
 
   BTGDLQReconcileFunction:
@@ -103,7 +104,7 @@ Resources:
         DLQEvent:
           Type: SQS
           Properties:
-            Queue: !Ref SyncQueueDLQArn   # ✅ CORRIGIDO
+            Queue: !GetAtt SyncQueueDLQ.Arn
             BatchSize: 1
 
 # ==========================================
