@@ -17,7 +17,7 @@ Description: >
 # ==========================================
 Globals:
   Function:
-    Runtime: python3.13
+    Runtime: python3.11
     Architectures:
       - x86_64
     Timeout: 300
@@ -132,12 +132,12 @@ Resources:
       Description: Shared Python libraries (BTG, AWS Clients, Core)
       ContentUri: layers/shared-libs/
       CompatibleRuntimes:
-        - python3.13
+        - python3.11
       CompatibleArchitectures:
         - x86_64
       RetentionPolicy: Retain
     Metadata:
-      BuildMethod: python3.13
+      BuildMethod: python3.11
       BuildArchitecture: x86_64
 
   # ── LAMBDA FUNCTIONS ──────────────────────────────────────────────
@@ -278,13 +278,13 @@ Resources:
       StageName: '$default'
       AutoDeploy: true
 
-  WebhookApiMapping:
-    Type: AWS::ApiGatewayV2::ApiMapping
-    DependsOn: WebhookStage
-    Properties:
-      DomainName: !Ref WebhookDomainName
-      ApiId: !Ref WebhookApi
-      Stage: '$default'
+  #WebhookApiMapping:
+   # Type: AWS::ApiGatewayV2::ApiMapping
+    #DependsOn: WebhookStage
+    #Properties:
+    #  DomainName: !Ref WebhookDomainName
+    #  ApiId: !Ref WebhookApi
+    #  Stage: '$default'
 
   WebhookLambdaPermission:
     Type: AWS::Lambda::Permission
@@ -361,8 +361,8 @@ Resources:
 # ==========================================
 Outputs:
   WebhookUrl:
-    Description: BTG webhook endpoint (via custom domain)
-    Value: !Sub 'https://${WebhookDomainName}/webhook'
+    Description: API Gateway URL
+    Value: !Sub 'https://${WebhookApi}.execute-api.${AWS::Region}.amazonaws.com/webhook'
 
   WebhookApiId:
     Description: API Gateway v2 API ID

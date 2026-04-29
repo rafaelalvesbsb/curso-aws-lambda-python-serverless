@@ -1,0 +1,132 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: FullAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: "*"
+                Resource: "*"
+
+  PipelineRole:   # ✅ AGORA DENTRO DE Resources
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: PipelineAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: "*"
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                - codestar-connections:UseConnection
+                Resource: arn:aws:codeconnections:us-east-2:538573288995:connection/92146908-3653-4b61-a4a9-e2bd3ab8101d
+
+  BuildInfra:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: agfi-infra-build
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:7.0
+        Type: LINUX_CONTAINER
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec-infra.yml
+
+  BuildApp:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: agfi-app-build
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:7.0
+        Type: LINUX_CONTAINER
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec-app.yml
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RoleArn: !GetAtt PipelineRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactBucket
+
+      Stages:
+
+        - Name: Source
+          Actions:
+            - Name: SourceAction
+              RunOrder: 1
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: 1
+              OutputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                ConnectionArn: arn:aws:codeconnections:us-east-2:538573288995:connection/92146908-3653-4b61-a4a9-e2bd3ab8101d
+                FullRepositoryId: rafaelalvesbsb/curso-aws-lambda-python-serverless
+                BranchName: main
+
+        - Name: Infra
+          Actions:
+            - Name: DeployInfra
+              RunOrder: 1
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              InputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                ProjectName: !Ref BuildInfra
+
+        - Name: App
+          Actions:
+            - Name: DeployApp
+              RunOrder: 1
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              InputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                ProjectName: !Ref BuildApp

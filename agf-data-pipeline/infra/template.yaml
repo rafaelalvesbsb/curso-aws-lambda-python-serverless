@@ -116,43 +116,25 @@ Resources:
 # ==========================================
 Outputs:
   DataLakeBucketName:
-    Description: Nome do bucket S3 Data Lake
-    Value: !Ref DataLakeBucket
-    Export:
-      Name: !Sub 'agfi-infra-${Environment}-DataLakeBucketName'
+  Type: String
+  Default: !ImportValue agfi-infra-dev-DataLakeBucketName
 
-  SyncQueueUrl:
-    Description: URL da fila SQS principal
-    Value: !GetAtt SyncQueue.QueueUrl
-    Export:
-      Name: !Sub 'agfi-infra-${Environment}-SyncQueueUrl'
+SyncQueueUrl:
+  Type: String
+  Default: !ImportValue agfi-infra-dev-SyncQueueUrl
 
-  SyncQueueArn:
-    Description: ARN da fila SQS principal
-    Value: !GetAtt SyncQueue.Arn
-    Export:
-      Name: !Sub 'agfi-infra-${Environment}-SyncQueueArn'
+SyncQueueArn:
+  Type: String
+  Default: !ImportValue agfi-infra-dev-SyncQueueArn
 
-  SyncQueueName:
-    Description: Nome da fila SQS principal
-    Value: !GetAtt SyncQueue.QueueName
-    Export:
-      Name: !Sub 'agfi-infra-${Environment}-SyncQueueName'
+SyncQueueDLQArn:
+  Type: String
+  Default: !ImportValue agfi-infra-dev-SyncQueueDLQArn
 
-  SyncQueueDLQArn:
-    Description: ARN da Dead Letter Queue
-    Value: !GetAtt SyncQueueDLQ.Arn
-    Export:
-      Name: !Sub 'agfi-infra-${Environment}-SyncQueueDLQArn'
+SyncStateTableName:
+  Type: String
+  Default: !ImportValue agfi-infra-dev-SyncStateTableName
 
-  SyncStateTableName:
-    Description: Nome da tabela DynamoDB de sync state
-    Value: !Ref SyncStateTable
-    Export:
-      Name: !Sub 'agfi-infra-${Environment}-SyncStateTableName'
-
-  WebhookDomainName:
-    Description: Custom domain name do API Gateway webhook
-    Value: !Ref WebhookDomainName
-    Export:
-      Name: !Sub 'agfi-infra-${Environment}-WebhookDomainName'
+SyncQueueName:
+  Type: String
+  Default: !ImportValue agfi-infra-dev-SyncQueueName
