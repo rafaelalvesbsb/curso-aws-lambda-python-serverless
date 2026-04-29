@@ -115,26 +115,33 @@ Resources:
 # OUTPUTS  (exportados para o stack Lambda)
 # ==========================================
 Outputs:
+
   DataLakeBucketName:
-  Type: String
-  Default: !ImportValue agfi-infra-dev-DataLakeBucketName
+    Value: !Ref DataLakeBucket
+    Export:
+      Name: !Sub agfi-infra-${Environment}-DataLakeBucketName
 
-SyncQueueUrl:
-  Type: String
-  Default: !ImportValue agfi-infra-dev-SyncQueueUrl
+  SyncQueueUrl:
+    Value: !Ref SyncQueue
+    Export:
+      Name: !Sub agfi-infra-${Environment}-SyncQueueUrl
 
-SyncQueueArn:
-  Type: String
-  Default: !ImportValue agfi-infra-dev-SyncQueueArn
+  SyncQueueArn:
+    Value: !GetAtt SyncQueue.Arn
+    Export:
+      Name: !Sub agfi-infra-${Environment}-SyncQueueArn
 
-SyncQueueDLQArn:
-  Type: String
-  Default: !ImportValue agfi-infra-dev-SyncQueueDLQArn
+  SyncQueueDLQArn:
+    Value: !GetAtt SyncQueueDLQ.Arn
+    Export:
+      Name: !Sub agfi-infra-${Environment}-SyncQueueDLQArn
 
-SyncStateTableName:
-  Type: String
-  Default: !ImportValue agfi-infra-dev-SyncStateTableName
+  SyncStateTableName:
+    Value: !Ref SyncStateTable
+    Export:
+      Name: !Sub agfi-infra-${Environment}-SyncStateTableName
 
-SyncQueueName:
-  Type: String
-  Default: !ImportValue agfi-infra-dev-SyncQueueName
+  SyncQueueName:
+    Value: !GetAtt SyncQueue.QueueName
+    Export:
+      Name: !Sub agfi-infra-${Environment}-SyncQueueName
