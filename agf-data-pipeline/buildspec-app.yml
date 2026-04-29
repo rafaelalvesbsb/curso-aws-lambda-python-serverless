@@ -2,8 +2,6 @@ version: 0.2
 
 phases:
   install:
-    runtime-versions:
-      python: 3.11
     commands:
       - pip install aws-sam-cli
 
@@ -13,4 +11,4 @@ phases:
 
   post_build:
     commands:
-      - sam deploy --template-file agf-data-pipeline/template.yaml --stack-name agfi-lambda-dev --no-confirm-changeset --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
+      - sam deploy --template-file agf-data-pipeline/template.yaml --stack-name agfi-lambda-dev --s3-bucket agfi-pipeline-artifactbucket-o3htnl0pnv5u --no-confirm-changeset --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
