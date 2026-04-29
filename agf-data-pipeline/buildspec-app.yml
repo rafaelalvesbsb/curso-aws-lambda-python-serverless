@@ -7,11 +7,14 @@ phases:
 
   build:
     commands:
+      - echo "Entrando no diretório do projeto"
       - cd agf-data-pipeline
       - sam build --use-container
 
   post_build:
     commands:
+      - cd agf-data-pipeline
+
       - echo "Limpando stack quebrada se existir..."
 
       - |
