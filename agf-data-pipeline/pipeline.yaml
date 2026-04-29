@@ -99,7 +99,7 @@ Resources:
               OutputArtifacts:
                 - Name: SourceOutput
               Configuration:
-                ConnectionArn: arn:aws:codeconnections:us-east-2:538573288995:connection/92146908-3653-4b61-a4a9-e2bd3ab8101d
+                ConnectionArn: arn:aws:codeconnections:us-east-2:637423580208:connection/a5329c0f-07df-449a-a70d-0a7d4214e5e4
                 FullRepositoryId: rafaelalvesbsb/curso-aws-lambda-python-serverless
                 BranchName: main
 
